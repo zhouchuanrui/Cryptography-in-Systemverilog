@@ -96,7 +96,9 @@ class CoreAES#(KEY_SIZE = 128);
         end
     endfunction
 
-    static protected function void addRoundKey (ref bit[7:0] st[], tWORD kw);
+    protected function void addRoundKey (ref bit[7:0] st[], int r);
+        for(int c = 0; c < 4; c++)
+            {st[c*4+0], st[c*4+1], st[c*4+2], st[c*4+3]} ^= w[r*4+c];
     endfunction
 
     function tBLOCK encrypt (const ref tBLOCK din);
@@ -108,16 +110,16 @@ class CoreAES#(KEY_SIZE = 128);
         //else
             //$fatal(1, "Get non-128-bit block..");
         //state = din;
-        addRoundKey(state, w[0]);
+        addRoundKey(state, 0);
         for(int i = 1; i < Nr; i++) begin
             subBytes(state);
             shiftRows(state);
             mixColumns(state);
-            addRoundKey(state, w[i]);
+            addRoundKey(state, i);
         end
         subBytes(state);
         shiftRows(state);
-        addRoundKey(state, w[Nr]);
+        addRoundKey(state, Nr);
         return {>>{state}};
     endfunction: encrypt
 endclass
