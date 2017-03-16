@@ -96,7 +96,7 @@ class CoreAES#(KEY_SIZE = 128);
         end
     endfunction
 
-    protected function void addRoundKey (ref bit[7:0] st[], int r);
+    protected function void addRoundKey (int r, ref bit[7:0] st[]);
         for(int c = 0; c < 4; c++)
             {st[c*4+0], st[c*4+1], st[c*4+2], st[c*4+3]} ^= w[r*4+c];
     endfunction
@@ -110,16 +110,16 @@ class CoreAES#(KEY_SIZE = 128);
         //else
             //$fatal(1, "Get non-128-bit block..");
         //state = din;
-        addRoundKey(state, 0);
+        addRoundKey(0, state);
         for(int i = 1; i < Nr; i++) begin
             subBytes(state);
             shiftRows(state);
             mixColumns(state);
-            addRoundKey(state, i);
+            addRoundKey(i, state);
         end
         subBytes(state);
         shiftRows(state);
-        addRoundKey(state, Nr);
+        addRoundKey(Nr, state);
         return {>>{state}};
     endfunction: encrypt
 endclass
