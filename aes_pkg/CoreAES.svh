@@ -39,15 +39,75 @@ class CoreAES#(KEY_SIZE = 128);
         8'h8c,  8'ha1,  8'h89,  8'h0d,  8'hbf,  8'he6,  8'h42,  8'h68,  8'h41,  8'h99,  8'h2d,  8'h0f,  8'hb0,  8'h54,  8'hbb,  8'h16
     };
 
-    function void subBytes (ref bit[7:0] st[16]);
+    static protected function void subBytes (ref bit[7:0] st[]);
         foreach(st[i]) 
             st[i] = sbox[st[i]];
     endfunction
 
+    static protected function void shiftRows (ref bit[7:0] st[]);
+        /* from
+        st = {
+            0, 4, 8, c,
+            1, 5, 9, d,
+            2, 6, a, e,
+            3, 7, b, f
+        };
+            to
+        st = {
+            0, 4, 8, c,
+            5, 9, d, 1,
+            a, e, 2, 6, 
+            f, 3, 7, b
+        }; */
+        st = {
+            st['h0], st['h5], st['ha], st['hf],
+            st['h4], st['h9], st['he], st['h3],
+            st['h8], st['hd], st['h2], st['h7],
+            st['hc], st['h1], st['h6], st['hb]
+        };
+    endfunction
+
+    static protected function bit[7:0] xtime(
+        bit [7:0] x
+    );
+        xtime = {x[6:0], 1'b0};
+        if (x[7] == 1)
+            xtime ^= 8'h1b;
+    endfunction
+
+    static protected function bit[7:0] GF8Mult (
+        bit[7:0] x, y
+    );
+        if (y == 0)
+            return 0;
+        else
+            return (y[0]?x:0)^GF8Mult(xtime(x), {1'b0, y[7:1]});
+    endfunction
+
+    static protected function void mixColumns (ref bit[7:0] st[]);
+        for (int c = 0; c < 4; c++) begin
+            {st[c*4+0], st[c*4+1], st[c*4+2], st[c*4+3]} = 
+                {
+                    GF8Mult(2, st[c*4+0])^GF8Mult(3, st[c*4+1])^st[c*4+2]^st[c*4+3],
+                    st[c*4+0]^GF8Mult(2, st[c*4+1])^GF8Mult(3, st[c*4+2])^st[c*4+3],
+                    st[c*4+0]^st[c*4+1]^GF8Mult(2, st[c*4+2])^GF8Mult(3, st[c*4+3]),
+                    GF8Mult(3, st[c*4+0])^st[c*4+1]^st[c*4+2]^GF8Mult(2, st[c*4+3])
+                };
+        end
+    endfunction
+
+    static protected function void addRoundKey (ref bit[7:0] st[], tWORD kw);
+    endfunction
+
     function tBLOCK encrypt (const ref tBLOCK din);
+    //function tBLOCK encrypt (const ref bit[7:0] din[]);
         //tBLOCK state;
-        bit[7:0] state[16];
-        state = {byte>>{din}};
+        bit[7:0] state[];
+        state = {>>{din}};
+        //assert(din.size == 16)
+        //else
+            //$fatal(1, "Get non-128-bit block..");
+        //state = din;
         addRoundKey(state, w[0]);
         for(int i = 1; i < Nr; i++) begin
             subBytes(state);
@@ -57,8 +117,8 @@ class CoreAES#(KEY_SIZE = 128);
         end
         subBytes(state);
         shiftRows(state);
-        addRoundKey(state, w[i]);
-        return state;
+        addRoundKey(state, w[Nr]);
+        return {>>{state}};
     endfunction: encrypt
 endclass
 
