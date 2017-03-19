@@ -9,16 +9,54 @@ class CoreAES#(KEY_SIZE = 128);
         Nk = KEY_SIZE/64,
         Nr = Nk+6;
 
-    protected tKEY key_r;
+    protected bit[7:0] key_r[];
     protected tWORD w[];
 
-    function new(tKEY kin = 0);
+    function new(tKEY kin[] = {});
         this.key_r = kin;
     endfunction
 
-    function void setKey (tKEY kin);
+    function void setKey (tKEY kin[]);
         this.key_r = kin;
     endfunction: setKey
+
+    static protected function tWORD subWord (tWORD win);
+        return {
+            sbox(win[7 -: 8]),
+            sbox(win[15 -: 8]),
+            sbox(win[23 -: 8]),
+            sbox(win[31 -: 8])
+        };
+    endfunction: subWord
+
+    static protected function tWORD rotWord (tWORD win);
+        return (win >> 24)|(win << 8);
+    endfunction: rotWord
+
+    static protected function tWORD rcon (int unsigned i);
+        bit[7:0] tmp;
+        tmp = 1;
+        repeat(i-1) begin
+            tmp = xtime(tmp);
+        end
+        return {tmp, 24'd0};
+    endfunction: rco
+
+    protected function void keyExpansion ();
+        tWORD temp;
+        for (int i=0; i<Nk; i++) begin
+            w[i] = {key[4*i+3], key[4*i+2], key[4*i+1], key[4*i]};
+            //w[i] = {key[4*i], key[4*i+1], key[4*i+2], key[4*i+3]};
+        end
+        for (int i=Nk; i<Nb*(Nr+1); i++) begin
+            temp = w[i-1];
+            if (i%Nk == 0)
+                temp = subWord(rotWord(temp))^rcon(i/Nk);
+            else if ((Nk > 6)&&(i % Nk == 4))
+                temp = subWord(temp);
+            w[i] = w[i-Nk]^temp;
+        end
+    endfunction: keyExpansion
 
     const static protected bit[7:0] sbox[256] = {
         8'h63,  8'h7c,  8'h77,  8'h7b,  8'hf2,  8'h6b,  8'h6f,  8'hc5,  8'h30,  8'h01,  8'h67,  8'h2b,  8'hfe,  8'hd7,  8'hab,  8'h76,  
@@ -101,15 +139,15 @@ class CoreAES#(KEY_SIZE = 128);
             {st[c*4+0], st[c*4+1], st[c*4+2], st[c*4+3]} ^= w[r*4+c];
     endfunction
 
-    function tBLOCK encrypt (const ref tBLOCK din);
-    //function tBLOCK encrypt (const ref bit[7:0] din[]);
+    //function tBLOCK encrypt (const ref tBLOCK din);
+    function tBLOCK encrypt (const ref bit[7:0] din[]);
         //tBLOCK state;
         bit[7:0] state[];
-        state = {>>{din}};
-        //assert(din.size == 16)
-        //else
-            //$fatal(1, "Get non-128-bit block..");
-        //state = din;
+        //state = {>>{din}};
+        assert(din.size == 16)
+        else
+            $fatal(1, "Get non-128-bit block..");
+        state = din;
         addRoundKey(0, state);
         for(int i = 1; i < Nr; i++) begin
             subBytes(state);
