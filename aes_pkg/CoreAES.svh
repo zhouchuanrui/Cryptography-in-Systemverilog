@@ -170,14 +170,14 @@ class CoreAES#(KEY_SIZE = 128);
 
     static protected function void invMixColumns (ref bit[7:0] st[]);
     `define __mix(a, b, c, d) \
-        GF8Mult(8'h``a, st[c*4+0])^GF8Mult(8'h``b, st[c*4+1])^GF8Mult(8'h``c, st[c*4+2])^GF8Mult(8'h``d, st[c*4+3])
+        GF8Mult(a, st[c*4+0])^GF8Mult(b, st[c*4+1])^GF8Mult(c, st[c*4+2])^GF8Mult(d, st[c*4+3])
         for (int c = 0; c < 4; c++) begin
             {st[c*4+0], st[c*4+1], st[c*4+2], st[c*4+3]} = 
                 {
-                    `__mix(e, b, d, 9),
-                    `__mix(9, e, b, d),
-                    `__mix(d, 9, e, b),
-                    `__mix(b, d, 9, e)
+                    `__mix(8'h0e, 8'h0b, 8'h0d, 8'h09),
+                    `__mix(8'h09, 8'h0e, 8'h0b, 8'h0d),
+                    `__mix(8'h0d, 8'h09, 8'h0e, 8'h0b),
+                    `__mix(8'h0b, 8'h0d, 8'h09, 8'h0e)
                 };
         end
     endfunction
@@ -216,18 +216,17 @@ class CoreAES#(KEY_SIZE = 128);
             $fatal(1, "Get non-128-bit block..");
         state = din;
         addRoundKey(Nr, state);
-        repeat(Nr-1) begin
+        for(int i=Nr-1; i>1; i--) begin
             invShiftRows(state);
             invSubBytes(state);
             addRoundKey(i, state);
             invMixColumns(state);
-            i--;
         end
         invShiftRows(state);
         invSubBytes(state);
         addRoundKey(0, state);
         dout = state;
-    endfunction: encrypt
+    endfunction
 endclass
 
 typedef CoreAES#(128) AES128;
