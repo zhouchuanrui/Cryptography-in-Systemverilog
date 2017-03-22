@@ -1,24 +1,23 @@
 
-class CoreAES#(KEY_SIZE = 128);
-    typedef bit [KEY_SIZE-1:0] tKEY;
-    typedef bit [127:0] tBLOCK;
+virtual class RijndaelPreliminaries;
     typedef bit [31:0] tWORD;
 
-    const static protected byte 
-        Nb = 4, 
-        Nk = KEY_SIZE/64,
-        Nr = Nk+6;
-
-    protected bit[7:0] key_r[];
-    protected tWORD w[];
-
-    function new(tKEY kin[] = {});
-        this.key_r = kin;
+    static protected function bit[7:0] xtime(
+        bit [7:0] x
+    );
+        xtime = {x[6:0], 1'b0};
+        if (x[7] == 1)
+            xtime ^= 8'h1b;
     endfunction
 
-    function void setKey (tKEY kin[]);
-        this.key_r = kin;
-    endfunction: setKey
+    static protected function bit[7:0] GF8Mult (
+        bit[7:0] x, y
+    );
+        if (y == 0)
+            return 0;
+        else
+            return (y[0]?x:0)^GF8Mult(xtime(x), {1'b0, y[7:1]});
+    endfunction
 
     const static protected bit[7:0] sbox[256] = {
         8'h63, 8'h7c, 8'h77, 8'h7b, 8'hf2, 8'h6b, 8'h6f, 8'hc5, 8'h30, 8'h01, 8'h67, 8'h2b, 8'hfe, 8'hd7, 8'hab, 8'h76, 
@@ -58,7 +57,6 @@ class CoreAES#(KEY_SIZE = 128);
         8'h17, 8'h2b, 8'h04, 8'h7e, 8'hba, 8'h77, 8'hd6, 8'h26, 8'he1, 8'h69, 8'h14, 8'h63, 8'h55, 8'h21, 8'h0c, 8'h7d
     };
 
-
     static protected function tWORD subWord (tWORD win);
         return {
             sbox[win[7 -: 8]],
@@ -80,22 +78,6 @@ class CoreAES#(KEY_SIZE = 128);
         end
         return {tmp, 24'd0};
     endfunction
-
-    protected function void keyExpansion ();
-        tWORD temp;
-        for (int i=0; i<Nk; i++) begin
-            w[i] = {key_r[4*i+3], key_r[4*i+2], key_r[4*i+1], key_r[4*i]};
-            //w[i] = {key_r[4*i], key_r[4*i+1], key_r[4*i+2], key_r[4*i+3]};
-        end
-        for (int i=Nk; i<Nb*(Nr+1); i++) begin
-            temp = w[i-1];
-            if (i%Nk == 0)
-                temp = subWord(rotWord(temp))^rcon(i/Nk);
-            else if ((Nk > 6)&&(i % Nk == 4))
-                temp = subWord(temp);
-            w[i] = w[i-Nk]^temp;
-        end
-    endfunction: keyExpansion
 
     static protected function void subBytes (ref bit[7:0] st[]);
         foreach(st[i]) 
@@ -139,23 +121,6 @@ class CoreAES#(KEY_SIZE = 128);
         };
     endfunction
 
-    static protected function bit[7:0] xtime(
-        bit [7:0] x
-    );
-        xtime = {x[6:0], 1'b0};
-        if (x[7] == 1)
-            xtime ^= 8'h1b;
-    endfunction
-
-    static protected function bit[7:0] GF8Mult (
-        bit[7:0] x, y
-    );
-        if (y == 0)
-            return 0;
-        else
-            return (y[0]?x:0)^GF8Mult(xtime(x), {1'b0, y[7:1]});
-    endfunction
-
     static protected function void mixColumns (ref bit[7:0] st[]);
         for (int c = 0; c < 4; c++) begin
             {st[c*4+0], st[c*4+1], st[c*4+2], st[c*4+3]} = 
@@ -181,6 +146,44 @@ class CoreAES#(KEY_SIZE = 128);
                 };
         end
     endfunction
+
+endclass: RijndaelPreliminaries
+
+//typedef class RijndaelPreliminaries;
+class CoreAES#(KEY_SIZE = 128) extends RijndaelPreliminaries;
+    typedef bit [KEY_SIZE-1:0] tKEY;
+
+    const static protected byte 
+        Nb = 4, 
+        Nk = KEY_SIZE/64,
+        Nr = Nk+6;
+
+    protected bit[7:0] key_r[];
+    protected tWORD w[];
+
+    function new(tKEY kin[] = {});
+        this.key_r = kin;
+    endfunction
+
+    function void setKey (tKEY kin[]);
+        this.key_r = kin;
+    endfunction: setKey
+
+    protected function void keyExpansion ();
+        tWORD temp;
+        for (int i=0; i<Nk; i++) begin
+            w[i] = {key_r[4*i+3], key_r[4*i+2], key_r[4*i+1], key_r[4*i]};
+            //w[i] = {key_r[4*i], key_r[4*i+1], key_r[4*i+2], key_r[4*i+3]};
+        end
+        for (int i=Nk; i<Nb*(Nr+1); i++) begin
+            temp = w[i-1];
+            if (i%Nk == 0)
+                temp = subWord(rotWord(temp))^rcon(i/Nk);
+            else if ((Nk > 6)&&(i % Nk == 4))
+                temp = subWord(temp);
+            w[i] = w[i-Nk]^temp;
+        end
+    endfunction: keyExpansion
 
     protected function void addRoundKey (int r, ref bit[7:0] st[]);
         for(int c = 0; c < 4; c++)
@@ -232,6 +235,5 @@ endclass
 typedef CoreAES#(128) AES128;
 typedef CoreAES#(192) AES192;
 typedef CoreAES#(256) AES256;
-
 
 
