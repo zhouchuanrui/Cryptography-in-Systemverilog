@@ -160,17 +160,35 @@ class CoreAES#(KEY_SIZE = 128) extends RijndaelPreliminaries;
 
     protected bit[7:0] key_r[];
     protected tWORD w[];
+    protected bit is_key_expanded;
 
-    function new(tKEY kin[] = {});
-        this.key_r = kin;
+    function new(bit[7:0] kin[] = {});
+        if (kin.size() inside {0, KEY_SIZE/8}) begin
+            this.key_r = kin;
+            if (this.key_r.size()!=0)
+                w = new[Nb*(Nr+1)];
+        end else begin
+            $fatal(1, "Wrong key size");
+        end
+        is_key_expanded = 0;
     endfunction
 
-    function void setKey (tKEY kin[]);
-        this.key_r = kin;
+    function void setKey (bit[7:0] kin[]);
+        if (kin.size() != KEY_SIZE/8) begin
+            $fatal(1, "Wrong key size");
+        end
+        if(kin != this.key_r) begin
+            this.key_r = kin;
+            w = new[Nb*(Nr+1)];
+            is_key_expanded = 0;
+        end
     endfunction: setKey
 
     protected function void keyExpansion ();
         tWORD temp;
+        if(key_r.size() == 0) begin
+            $fatal(1, "No key set...");
+        end
         for (int i=0; i<Nk; i++) begin
             w[i] = {key_r[4*i+3], key_r[4*i+2], key_r[4*i+1], key_r[4*i]};
             //w[i] = {key_r[4*i], key_r[4*i+1], key_r[4*i+2], key_r[4*i+3]};
@@ -183,6 +201,7 @@ class CoreAES#(KEY_SIZE = 128) extends RijndaelPreliminaries;
                 temp = subWord(temp);
             w[i] = w[i-Nk]^temp;
         end
+        is_key_expanded = 1;
     endfunction: keyExpansion
 
     protected function void addRoundKey (int r, ref bit[7:0] st[]);
@@ -199,6 +218,7 @@ class CoreAES#(KEY_SIZE = 128) extends RijndaelPreliminaries;
         else
             $fatal(1, "Get non-128-bit block..");
         state = din;
+        if(is_key_expanded == 0) keyExpansion();
         addRoundKey(0, state);
         for(int i = 1; i < Nr; i++) begin
             subBytes(state);
@@ -218,6 +238,7 @@ class CoreAES#(KEY_SIZE = 128) extends RijndaelPreliminaries;
         else
             $fatal(1, "Get non-128-bit block..");
         state = din;
+        if(is_key_expanded == 0) keyExpansion();
         addRoundKey(Nr, state);
         for(int i=Nr-1; i>1; i--) begin
             invShiftRows(state);
