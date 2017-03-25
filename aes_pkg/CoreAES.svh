@@ -1,5 +1,18 @@
+virtual class LogBase;
+    static protected bit is_muted;
 
-virtual class RijndaelPreliminaries;
+    static function void setMuted ();        
+        is_muted = 1;
+    endfunction: setMuted
+
+    static function void setLogging ();
+        is_muted = 0;
+    endfunction: setLogging
+
+    `define _LOG(s) `LOG(s, is_muted)
+endclass
+
+virtual class RijndaelPreliminaries extends;
     typedef bit [31:0] tWORD;
 
     static protected function bit[7:0] xtime(
@@ -171,6 +184,7 @@ class CoreAES#(KEY_SIZE = 128) extends RijndaelPreliminaries;
             $fatal(1, "Wrong key size");
         end
         is_key_expanded = 0;
+        is_muted = 0;
     endfunction
 
     function void setKey (bit[7:0] kin[]);
