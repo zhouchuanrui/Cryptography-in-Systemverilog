@@ -10,9 +10,10 @@ virtual class LogBase;
     endfunction: setLogging
 
     `define _LOG(s) `LOG(s, is_muted)
+
 endclass
 
-virtual class RijndaelPreliminaries extends;
+virtual class RijndaelPreliminaries extends LogBase;
     typedef bit [31:0] tWORD;
 
     static protected function bit[7:0] xtime(
@@ -197,12 +198,19 @@ class CoreAES#(KEY_SIZE = 128) extends RijndaelPreliminaries;
         end
     endfunction: setKey
 
+    `define _LOG_S(s, array, w=128) \
+    if (!is_muted) begin \
+        bit[w-1:0] tmp; \
+        tmp = {>>byte{array}}; \
+        $write(s, tmp); \
+    end
+
     protected function void keyExpansion ();
         tWORD temp;
         if(key_r.size() == 0) begin
             $fatal(1, "No key set...");
         end
-        `_LOG($sformatf("Key = %0h\n", {>>{this.key_r}}))
+        `_LOG_S("Key = %0h\n", key_r, KEY_SIZE)
         for (int i=0; i<Nk; i++) begin
             w[i] = {key_r[4*i+3], key_r[4*i+2], key_r[4*i+1], key_r[4*i]};
             //w[i] = {key_r[4*i], key_r[4*i+1], key_r[4*i+2], key_r[4*i+3]};
@@ -240,29 +248,35 @@ class CoreAES#(KEY_SIZE = 128) extends RijndaelPreliminaries;
             $fatal(1, "Get non-128-bit block..");
         state = din;
         if(is_key_expanded == 0) keyExpansion();
-        `_LOG($sformatf("Input = %0h", {>>{din}}))
-        `_LOG($sformatf("Key   = %0h", {>>{this.key_r}}))
+        //`_LOG($sformatf("Input = %0h", {>>{din}}))
+        //`_LOG($sformatf("Key   = %0h", {>>{this.key_r}}))
+        `_LOG_S("Input = %0h\n", din)
+        `_LOG_S("Key   = %0h\n", this.key_r, KEY_SIZE)
         addRoundKey(0, state);
         for(int i = 1; i < Nr; i++) begin
-            `_LOG($sformatf("Round %02d: %032h", i, {>>{state}}))
+            `_LOG($sformatf("Round %02d:", i)) `_LOG_S("%032h", state)
             subBytes(state);
-            `_LOG($sformatf("--> subBytes --> %032h", {>>{state}}))
+            `_LOG_S("--> subBytes --> %032h", state)
             shiftRows(state);
-            `_LOG($sformatf("--> shiftRows --> %032h", {>>{state}}))
+            `_LOG_S("--> shiftRows --> %032h", state)
             mixColumns(state);
-            `_LOG($sformatf("--> mixColumns --> %032h", {>>{state}}))
+            `_LOG_S("--> mixColumns --> %032h", state)
             addRoundKey(i, state);
-            `_LOG($sformatf("--> addRoundKey --> %032h \n", {>>{state}}))
+            `_LOG_S("--> addRoundKey --> %032h \n", state)
         end
-        `_LOG($sformatf("Round %02d: %032h", i, {>>{state}}))
+        `_LOG($sformatf("Round %02d:", Nr))
+        `_LOG_S(" %32h", state)
         subBytes(state);
-        `_LOG($sformatf("--> subBytes --> %032h", {>>{state}}))
+        //`_LOG($sformatf("--> subBytes --> %032h", {>>{state}}))
+        `_LOG_S("--> subBytes --> %32h", state)
         shiftRows(state);
-        `_LOG($sformatf("--> shiftRows --> %032h", {>>{state}}))
+        //`_LOG($sformatf("--> shiftRows --> %032h", {>>{state}}))
+        `_LOG_S("--> shiftRows --> %32h", state)
         addRoundKey(Nr, state);
-        `_LOG($sformatf("--> addRoundKey --> %032h \n", {>>{state}}))
+        //`_LOG($sformatf("--> addRoundKey --> %032h \n", {>>{state}}))
+        `_LOG_S("--> addRoundKey --> %32h\n", state)
         dout = state;
-        `_LOG($sformatf("Output = %0h \n", {>>{dout}}))
+        `_LOG_S("Output = %0h \n", dout)
     endfunction: encrypt
 
     function void decrypt (const ref bit[7:0] din[], ref bit[7:0] dout[]);
@@ -272,28 +286,28 @@ class CoreAES#(KEY_SIZE = 128) extends RijndaelPreliminaries;
             $fatal(1, "Get non-128-bit block..");
         state = din;
         if(is_key_expanded == 0) keyExpansion();
-        `_LOG($sformatf("Ciphertxt = %0h \n", {>>{din}}))
-        `_LOG($sformatf("Key       = %0h \n", {>>{this.key_r}}))
+        `_LOG_S("Ciphertxt = %0h \n", din)
+        `_LOG_S("Key       = %0h \n", this.key_r)
         addRoundKey(Nr, state);
         for(int i=Nr-1; i>1; i--) begin
-            `_LOG($sformatf("round[%2d].iinput  %032h\n", i, {>>{state}}))
+            `_LOG($sformatf("round[%2d].iinput", i)) `_LOG_S("%032h\n", state)
             invShiftRows(state);
-            `_LOG($sformatf("round[%2d].is_row  %032h\n", i, {>>{state}}))
+            `_LOG($sformatf("round[%2d].is_row", i)) `_LOG_S("%032h\n", state)
             invSubBytes(state);
-            `_LOG($sformatf("round[%2d].is_box  %032h\n", i, {>>{state}}))
+            `_LOG($sformatf("round[%2d].is_box", i)) `_LOG_S("%032h\n", state)
             addRoundKey(i, state);
-            `_LOG($sformatf("round[%2d].ik_sch  %032h\n", i, {>>{state}}))
+            `_LOG($sformatf("round[%2d].ik_sch", i)) `_LOG_S("%032h\n", state)
             invMixColumns(state);
-            //`_LOG($sformatf("round[%2d].ik_sch  %032h", i, {>>{state}}))
+            //`_LOG($sformatf("round[%2d].ik_sch", i)) `_LOG_S("%032h", state)
         end
-        `_LOG($sformatf("round[%2d].iinput  %032h\n", i, {>>{state}}))
+        `_LOG($sformatf("round[%2d].iinput", 1)) `_LOG_S("%032h\n", state)
         invShiftRows(state);
-        `_LOG($sformatf("round[%2d].is_row  %032h\n", i, {>>{state}}))
+        `_LOG($sformatf("round[%2d].is_row", 1)) `_LOG_S("%032h\n", state)
         invSubBytes(state);
-        `_LOG($sformatf("round[%2d].is_box  %032h\n", i, {>>{state}}))
+        `_LOG($sformatf("round[%2d].is_box", 1)) `_LOG_S("%032h\n", state)
         addRoundKey(0, state);
         dout = state;
-        `_LOG($sformatf("round[%2d].output  %032h\n", i, {>>{state}}))
+        `_LOG($sformatf("round[%2d].output", 1)) `_LOG_S("%032h\n", state)
     endfunction
 endclass
 

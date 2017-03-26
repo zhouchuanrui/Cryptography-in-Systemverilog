@@ -6,7 +6,7 @@ package aes_pkg;
     if (!off) $write(s); \
     `endif
 
-    `include "CoreAES.sv"
+    `include "CoreAES.svh"
     typedef CoreAES#(128) AES128;
     typedef CoreAES#(192) AES192;
     typedef CoreAES#(256) AES256;
