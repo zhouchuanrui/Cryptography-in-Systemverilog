@@ -165,7 +165,6 @@ endclass: RijndaelPreliminaries
 //typedef class RijndaelPreliminaries;
 class CoreAES#(KEY_SIZE = 128) extends RijndaelPreliminaries;
     typedef bit [KEY_SIZE-1:0] tKEY;
-
     const static protected byte 
         Nb = 4, 
         Nk = KEY_SIZE/64,
@@ -203,17 +202,25 @@ class CoreAES#(KEY_SIZE = 128) extends RijndaelPreliminaries;
         if(key_r.size() == 0) begin
             $fatal(1, "No key set...");
         end
+        `_LOG($sformatf("Key = %0h\n", {>>{this.key_r}}))
         for (int i=0; i<Nk; i++) begin
             w[i] = {key_r[4*i+3], key_r[4*i+2], key_r[4*i+1], key_r[4*i]};
             //w[i] = {key_r[4*i], key_r[4*i+1], key_r[4*i+2], key_r[4*i+3]};
+            `_LOG($sformatf("w[%0d] = %08h\t", i, w[i]))
         end
+        `_LOG("\n")
         for (int i=Nk; i<Nb*(Nr+1); i++) begin
             temp = w[i-1];
-            if (i%Nk == 0)
+            `_LOG($sformatf("round %02d: temp = %08h ", i, temp))
+            if (i%Nk == 0) begin
                 temp = subWord(rotWord(temp))^rcon(i/Nk);
-            else if ((Nk > 6)&&(i % Nk == 4))
+                `_LOG($sformatf(", %08h after xor with rcon", temp))
+            end else if ((Nk > 6)&&(i % Nk == 4)) begin
                 temp = subWord(temp);
+                `_LOG($sformatf(", %08h after subWord", temp))
+            end
             w[i] = w[i-Nk]^temp;
+            `_LOG($sformatf("w[i] = %08h\n", w[i]))
         end
         is_key_expanded = 1;
     endfunction: keyExpansion
@@ -232,6 +239,7 @@ class CoreAES#(KEY_SIZE = 128) extends RijndaelPreliminaries;
         else
             $fatal(1, "Get non-128-bit block..");
         state = din;
+        `_LOG($sformatf("Input = %0h", {>>{din}}))
         if(is_key_expanded == 0) keyExpansion();
         addRoundKey(0, state);
         for(int i = 1; i < Nr; i++) begin
