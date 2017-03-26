@@ -239,19 +239,30 @@ class CoreAES#(KEY_SIZE = 128) extends RijndaelPreliminaries;
         else
             $fatal(1, "Get non-128-bit block..");
         state = din;
-        `_LOG($sformatf("Input = %0h", {>>{din}}))
         if(is_key_expanded == 0) keyExpansion();
+        `_LOG($sformatf("Input = %0h", {>>{din}}))
+        `_LOG($sformatf("Key   = %0h", {>>{this.key_r}}))
         addRoundKey(0, state);
         for(int i = 1; i < Nr; i++) begin
+            `_LOG($sformatf("Round %02d: %032h", i, {>>{state}}))
             subBytes(state);
+            `_LOG($sformatf("--> subBytes --> %032h", {>>{state}}))
             shiftRows(state);
+            `_LOG($sformatf("--> shiftRows --> %032h", {>>{state}}))
             mixColumns(state);
+            `_LOG($sformatf("--> mixColumns --> %032h", {>>{state}}))
             addRoundKey(i, state);
+            `_LOG($sformatf("--> addRoundKey --> %032h \n", {>>{state}}))
         end
+        `_LOG($sformatf("Round %02d: %032h", i, {>>{state}}))
         subBytes(state);
+        `_LOG($sformatf("--> subBytes --> %032h", {>>{state}}))
         shiftRows(state);
+        `_LOG($sformatf("--> shiftRows --> %032h", {>>{state}}))
         addRoundKey(Nr, state);
+        `_LOG($sformatf("--> addRoundKey --> %032h \n", {>>{state}}))
         dout = state;
+        `_LOG($sformatf("Output = %0h \n", {>>{dout}}))
     endfunction: encrypt
 
     function void decrypt (const ref bit[7:0] din[], ref bit[7:0] dout[]);
@@ -261,22 +272,29 @@ class CoreAES#(KEY_SIZE = 128) extends RijndaelPreliminaries;
             $fatal(1, "Get non-128-bit block..");
         state = din;
         if(is_key_expanded == 0) keyExpansion();
+        `_LOG($sformatf("Ciphertxt = %0h \n", {>>{din}}))
+        `_LOG($sformatf("Key       = %0h \n", {>>{this.key_r}}))
         addRoundKey(Nr, state);
         for(int i=Nr-1; i>1; i--) begin
+            `_LOG($sformatf("round[%2d].iinput  %032h\n", i, {>>{state}}))
             invShiftRows(state);
+            `_LOG($sformatf("round[%2d].is_row  %032h\n", i, {>>{state}}))
             invSubBytes(state);
+            `_LOG($sformatf("round[%2d].is_box  %032h\n", i, {>>{state}}))
             addRoundKey(i, state);
+            `_LOG($sformatf("round[%2d].ik_sch  %032h\n", i, {>>{state}}))
             invMixColumns(state);
+            //`_LOG($sformatf("round[%2d].ik_sch  %032h", i, {>>{state}}))
         end
+        `_LOG($sformatf("round[%2d].iinput  %032h\n", i, {>>{state}}))
         invShiftRows(state);
+        `_LOG($sformatf("round[%2d].is_row  %032h\n", i, {>>{state}}))
         invSubBytes(state);
+        `_LOG($sformatf("round[%2d].is_box  %032h\n", i, {>>{state}}))
         addRoundKey(0, state);
         dout = state;
+        `_LOG($sformatf("round[%2d].output  %032h\n", i, {>>{state}}))
     endfunction
 endclass
-
-typedef CoreAES#(128) AES128;
-typedef CoreAES#(192) AES192;
-typedef CoreAES#(256) AES256;
 
 
