@@ -24,7 +24,7 @@ virtual class RijndaelPreliminaries extends LogBase;
             xtime ^= 8'h1b;
     endfunction
 
-    static protected function bit[7:0] GF8Mult (
+    static function bit[7:0] GF8Mult (
         bit[7:0] x, y
     );
         if (y == 0)
@@ -148,11 +148,9 @@ virtual class RijndaelPreliminaries extends LogBase;
     endfunction
 
     static protected function void invMixColumns (ref bit[7:0] st[]);
-    `define __mix(a, b, c, d) \
-        GF8Mult(a, st[c*4+0])^GF8Mult(b, st[c*4+1])^GF8Mult(c, st[c*4+2])^GF8Mult(d, st[c*4+3])
+    `define __mix(c0, c1, c2, c3) \
+        GF8Mult(c0, st[c*4+0])^GF8Mult(c1, st[c*4+1])^GF8Mult(c2, st[c*4+2])^GF8Mult(c3, st[c*4+3])
         for (int c = 0; c < 4; c++) begin
-            $stop;
-            $display("word[%0d] = %08h", c, {st[c*4+0], st[c*4+1], st[c*4+2], st[c*4+3]});
             {st[c*4+0], st[c*4+1], st[c*4+2], st[c*4+3]} = 
                 {
                     `__mix(8'h0e, 8'h0b, 8'h0d, 8'h09),
@@ -160,7 +158,6 @@ virtual class RijndaelPreliminaries extends LogBase;
                     `__mix(8'h0d, 8'h09, 8'h0e, 8'h0b),
                     `__mix(8'h0b, 8'h0d, 8'h09, 8'h0e)
                 };
-            $display("word[%0d] = %08h", c, {st[c*4+0], st[c*4+1], st[c*4+2], st[c*4+3]});
         end
     endfunction
 
@@ -233,6 +230,7 @@ class CoreAES#(KEY_SIZE = 128) extends RijndaelPreliminaries;
             w[i] = w[i-Nk]^temp;
             `_LOG($sformatf("w[i] = %08h\n", w[i]))
         end
+        `_LOG("\n")
         is_key_expanded = 1;
     endfunction: keyExpansion
 
@@ -279,7 +277,7 @@ class CoreAES#(KEY_SIZE = 128) extends RijndaelPreliminaries;
         //`_LOG($sformatf("--> addRoundKey --> %032h \n", {>>{state}}))
         `_LOG_S("--> addRoundKey --> %32h\n", state)
         dout = state;
-        `_LOG_S("Output = %0h \n", dout)
+        `_LOG_S("Output = %0h \n\n", dout)
     endfunction: encrypt
 
     function void decrypt (const ref bit[7:0] din[], ref bit[7:0] dout[]);
@@ -292,7 +290,7 @@ class CoreAES#(KEY_SIZE = 128) extends RijndaelPreliminaries;
         `_LOG_S("Ciphertxt = %0h \n", din)
         `_LOG_S("Key       = %0h \n", this.key_r, KEY_SIZE)
         addRoundKey(Nr, state);
-        for(int i=Nr-1; i>1; i--) begin
+        for(int i=Nr-1; i>0; i--) begin
             `_LOG($sformatf("round[%2d].iinput ", i)) `_LOG_S("%032h\n", state)
             invShiftRows(state);
             `_LOG($sformatf("round[%2d].is_row ", i)) `_LOG_S("%032h\n", state)
@@ -310,7 +308,7 @@ class CoreAES#(KEY_SIZE = 128) extends RijndaelPreliminaries;
         `_LOG($sformatf("round[%2d].is_box ", 1)) `_LOG_S("%032h\n", state)
         addRoundKey(0, state);
         dout = state;
-        `_LOG($sformatf("round[%2d].output ", 1)) `_LOG_S("%032h\n", state)
+        `_LOG($sformatf("round[%2d].output ", 1)) `_LOG_S("%032h\n\n", state)
     endfunction
 endclass
 
