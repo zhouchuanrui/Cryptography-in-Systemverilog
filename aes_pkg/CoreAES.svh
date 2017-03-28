@@ -73,10 +73,10 @@ virtual class RijndaelPreliminaries extends LogBase;
 
     static protected function tWORD subWord (tWORD win);
         return {
-            sbox[win[7 -: 8]],
-            sbox[win[15 -: 8]],
+            sbox[win[31 -: 8]],
             sbox[win[23 -: 8]],
-            sbox[win[31 -: 8]]
+            sbox[win[15 -: 8]],
+            sbox[win[7 -: 8]]
         };
     endfunction: subWord
 
@@ -151,6 +151,8 @@ virtual class RijndaelPreliminaries extends LogBase;
     `define __mix(a, b, c, d) \
         GF8Mult(a, st[c*4+0])^GF8Mult(b, st[c*4+1])^GF8Mult(c, st[c*4+2])^GF8Mult(d, st[c*4+3])
         for (int c = 0; c < 4; c++) begin
+            $stop;
+            $display("word[%0d] = %08h", c, {st[c*4+0], st[c*4+1], st[c*4+2], st[c*4+3]});
             {st[c*4+0], st[c*4+1], st[c*4+2], st[c*4+3]} = 
                 {
                     `__mix(8'h0e, 8'h0b, 8'h0d, 8'h09),
@@ -158,6 +160,7 @@ virtual class RijndaelPreliminaries extends LogBase;
                     `__mix(8'h0d, 8'h09, 8'h0e, 8'h0b),
                     `__mix(8'h0b, 8'h0d, 8'h09, 8'h0e)
                 };
+            $display("word[%0d] = %08h", c, {st[c*4+0], st[c*4+1], st[c*4+2], st[c*4+3]});
         end
     endfunction
 
@@ -168,26 +171,20 @@ class CoreAES#(KEY_SIZE = 128) extends RijndaelPreliminaries;
     typedef bit [KEY_SIZE-1:0] tKEY;
     const static protected byte 
         Nb = 4, 
-        Nk = KEY_SIZE/64,
+        Nk = KEY_SIZE/32,
         Nr = Nk+6;
 
     protected bit[7:0] key_r[];
     protected tWORD w[];
     protected bit is_key_expanded;
 
-    function new(bit[7:0] kin[] = {});
-        if (kin.size() inside {0, KEY_SIZE/8}) begin
-            this.key_r = kin;
-            if (this.key_r.size()!=0)
-                w = new[Nb*(Nr+1)];
-        end else begin
-            $fatal(1, "Wrong key size");
-        end
+    //function new(const ref bit[7:0] kin[] = {});
+    function new();
         is_key_expanded = 0;
-        is_muted = 0;
+        is_muted = 1;
     endfunction
 
-    function void setKey (bit[7:0] kin[]);
+    function void setKey (const ref bit[7:0] kin[]);
         if (kin.size() != KEY_SIZE/8) begin
             $fatal(1, "Wrong key size");
         end
@@ -199,11 +196,13 @@ class CoreAES#(KEY_SIZE = 128) extends RijndaelPreliminaries;
     endfunction: setKey
 
     `define _LOG_S(s, array, w=128) \
+    `ifndef NO_LOG \
     if (!is_muted) begin \
         bit[w-1:0] tmp; \
         tmp = {>>byte{array}}; \
         $write(s, tmp); \
-    end
+    end \
+    `endif
 
     protected function void keyExpansion ();
         tWORD temp;
@@ -212,17 +211,21 @@ class CoreAES#(KEY_SIZE = 128) extends RijndaelPreliminaries;
         end
         `_LOG_S("Key = %0h\n", key_r, KEY_SIZE)
         for (int i=0; i<Nk; i++) begin
-            w[i] = {key_r[4*i+3], key_r[4*i+2], key_r[4*i+1], key_r[4*i]};
-            //w[i] = {key_r[4*i], key_r[4*i+1], key_r[4*i+2], key_r[4*i+3]};
-            `_LOG($sformatf("w[%0d] = %08h\t", i, w[i]))
+            //w[i] = {key_r[4*i+3], key_r[4*i+2], key_r[4*i+1], key_r[4*i]};
+            w[i] = {key_r[4*i], key_r[4*i+1], key_r[4*i+2], key_r[4*i+3]};
+            `_LOG($sformatf("w[%0d] = %08h    ", i, w[i]))
         end
         `_LOG("\n")
         for (int i=Nk; i<Nb*(Nr+1); i++) begin
             temp = w[i-1];
             `_LOG($sformatf("round %02d: temp = %08h ", i, temp))
             if (i%Nk == 0) begin
-                temp = subWord(rotWord(temp))^rcon(i/Nk);
-                `_LOG($sformatf(", %08h after xor with rcon", temp))
+                temp = rotWord(temp);
+                `_LOG($sformatf("--> %08h ", temp))
+                temp = subWord(temp);
+                `_LOG($sformatf("--> %08h ", temp))
+                temp = temp^rcon(i/Nk);
+                `_LOG($sformatf("^ %08h --> %08h ", rcon(i/Nk), temp))
             end else if ((Nk > 6)&&(i % Nk == 4)) begin
                 temp = subWord(temp);
                 `_LOG($sformatf(", %08h after subWord", temp))
@@ -287,27 +290,27 @@ class CoreAES#(KEY_SIZE = 128) extends RijndaelPreliminaries;
         state = din;
         if(is_key_expanded == 0) keyExpansion();
         `_LOG_S("Ciphertxt = %0h \n", din)
-        `_LOG_S("Key       = %0h \n", this.key_r)
+        `_LOG_S("Key       = %0h \n", this.key_r, KEY_SIZE)
         addRoundKey(Nr, state);
         for(int i=Nr-1; i>1; i--) begin
-            `_LOG($sformatf("round[%2d].iinput", i)) `_LOG_S("%032h\n", state)
+            `_LOG($sformatf("round[%2d].iinput ", i)) `_LOG_S("%032h\n", state)
             invShiftRows(state);
-            `_LOG($sformatf("round[%2d].is_row", i)) `_LOG_S("%032h\n", state)
+            `_LOG($sformatf("round[%2d].is_row ", i)) `_LOG_S("%032h\n", state)
             invSubBytes(state);
-            `_LOG($sformatf("round[%2d].is_box", i)) `_LOG_S("%032h\n", state)
+            `_LOG($sformatf("round[%2d].is_box ", i)) `_LOG_S("%032h\n", state)
             addRoundKey(i, state);
-            `_LOG($sformatf("round[%2d].ik_sch", i)) `_LOG_S("%032h\n", state)
+            `_LOG($sformatf("round[%2d].ik_sch ", i)) `_LOG_S("%032h\n", state)
             invMixColumns(state);
             //`_LOG($sformatf("round[%2d].ik_sch", i)) `_LOG_S("%032h", state)
         end
-        `_LOG($sformatf("round[%2d].iinput", 1)) `_LOG_S("%032h\n", state)
+        `_LOG($sformatf("round[%2d].iinput ", 1)) `_LOG_S("%032h\n", state)
         invShiftRows(state);
-        `_LOG($sformatf("round[%2d].is_row", 1)) `_LOG_S("%032h\n", state)
+        `_LOG($sformatf("round[%2d].is_row ", 1)) `_LOG_S("%032h\n", state)
         invSubBytes(state);
-        `_LOG($sformatf("round[%2d].is_box", 1)) `_LOG_S("%032h\n", state)
+        `_LOG($sformatf("round[%2d].is_box ", 1)) `_LOG_S("%032h\n", state)
         addRoundKey(0, state);
         dout = state;
-        `_LOG($sformatf("round[%2d].output", 1)) `_LOG_S("%032h\n", state)
+        `_LOG($sformatf("round[%2d].output ", 1)) `_LOG_S("%032h\n", state)
     endfunction
 endclass
 
