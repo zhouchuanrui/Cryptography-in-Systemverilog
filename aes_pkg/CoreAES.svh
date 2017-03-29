@@ -21,9 +21,8 @@ class CoreAES#(KEY_SIZE = 128) extends RijndaelPreliminaries;
     endfunction
 
     function void setKey (const ref bit[7:0] kin[]);
-        if (kin.size() != KEY_SIZE/8) begin
-            $fatal(1, "Wrong key size");
-        end
+        assert (kin.size() == KEY_SIZE/8)
+        else $fatal(1, "Wrong key size");
         if(kin != this.key_r) begin
             this.key_r = kin;
             w = new[Nb*(Nr+1)];
@@ -42,9 +41,8 @@ class CoreAES#(KEY_SIZE = 128) extends RijndaelPreliminaries;
 
     protected function void keyExpansion ();
         tWORD temp;
-        if(key_r.size() == 0) begin
-            $fatal(1, "No key set...");
-        end
+        assert(key_r.size() != 0) 
+        else $fatal(1, "No key set...");
         `_LOG_S("Key = %0h\n", key_r, KEY_SIZE)
         for (int i=0; i<Nk; i++) begin
             //w[i] = {key_r[4*i+3], key_r[4*i+2], key_r[4*i+1], key_r[4*i]};
@@ -84,8 +82,7 @@ class CoreAES#(KEY_SIZE = 128) extends RijndaelPreliminaries;
         bit[7:0] state[];
         //state = {>>{din}};
         assert(din.size == 16)
-        else
-            $fatal(1, "Get non-128-bit block..");
+        else $fatal(1, "Get non-128-bit block..");
         state = din;
         if(is_key_expanded == 0) keyExpansion();
         //`_LOG($sformatf("Input = %0h", {>>{din}}))
@@ -122,8 +119,7 @@ class CoreAES#(KEY_SIZE = 128) extends RijndaelPreliminaries;
     function void decrypt (const ref bit[7:0] din[], ref bit[7:0] dout[]);
         bit[7:0] state[];
         assert(din.size == 16)
-        else
-            $fatal(1, "Get non-128-bit block..");
+        else $fatal(1, "Get non-128-bit block..");
         state = din;
         if(is_key_expanded == 0) keyExpansion();
         `_LOG_S("Ciphertxt = %0h \n", din)
