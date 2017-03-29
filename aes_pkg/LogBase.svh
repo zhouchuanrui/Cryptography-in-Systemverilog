@@ -1,3 +1,11 @@
+//
+//File: LogBase.svh
+//Device: 
+//Created:  2017-3-29 23:01:18
+//Description: logging base
+//Revisions: 
+//2017-3-29 23:01:29: created
+//
 
 `ifndef __LOG_BASE_SVH__
 `define __LOG_BASE_SVH__

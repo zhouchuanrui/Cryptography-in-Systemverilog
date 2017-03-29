@@ -1,3 +1,11 @@
+//
+//File: RijndaelPreliminaries.svh
+//Device: 
+//Created:  2017-3-29 23:01:41
+//Description: algorithm preliminaries
+//Revisions: 
+//2017-3-29 23:01:57: created
+//
 
 `ifndef __RIJNDAEL_PRELIMINARIES_SVH__
 `define __RIJNDAEL_PRELIMINARIES_SVH__

@@ -1,3 +1,11 @@
+//
+//File: CoreAES.svh
+//Device: 
+//Created:  2017-3-29 23:00:59
+//Description: AES core
+//Revisions: 
+//2017-3-29 23:01:08: created   
+//
 
 `ifndef __CORE_AES_SVH__
 `define __CORE_AES_SVH__
