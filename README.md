@@ -57,3 +57,11 @@ Method `decrypt` do the decryption on the same manner.
 
 **IMPORTANT**: Add `<your_dir>/aes_pkg/aes_pkg.sv` to your compiling filelist, and lines `aes_pkg.sv` ahead of files referencing AES classes. And add option `+incdir+<your_dir>/aes_pkg` to your compile command. 
 
+## Logging Issue
+
+`aes_obj.setLogging()` turns on logging when `aes_obj` performs key expansion, encrytion or decryption. 
+`aes_obj.setMuted() shuts the logging, and that is the default behavior of an `aes_obj`.
+Note that `setLogging()` and `setMuted()` are static methods.
+You can add `+define+NO_LOG` to compiling command to remove all logging facilities.
+
+
