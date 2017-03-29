@@ -6,6 +6,8 @@ package aes_pkg;
     if (!off) $write(s); \
     `endif
 
+    `include "LogBase.svh"
+    `include "RijndaelPreliminaries.svh"
     `include "CoreAES.svh"
     typedef CoreAES#(128) AES128;
     typedef CoreAES#(192) AES192;
