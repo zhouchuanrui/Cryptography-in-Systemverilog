@@ -22,7 +22,6 @@ class CoreAES#(KEY_SIZE = 128) extends RijndaelPreliminaries;
     protected tWORD w[];
     protected bit is_key_expanded;
 
-    //function new(const ref bit[7:0] kin[] = {});
     function new();
         is_key_expanded = 0;
         is_muted = 1;
@@ -84,17 +83,12 @@ class CoreAES#(KEY_SIZE = 128) extends RijndaelPreliminaries;
             {st[c*4+0], st[c*4+1], st[c*4+2], st[c*4+3]} ^= w[r*4+c];
     endfunction
 
-    //function tBLOCK encrypt (const ref tBLOCK din);
     function void encrypt (const ref bit[7:0] din[], ref bit[7:0] dout[]);
-        //tBLOCK state;
         bit[7:0] state[];
-        //state = {>>{din}};
         assert(din.size == 16)
         else $fatal(1, "Get non-128-bit block..");
         state = din;
         if(is_key_expanded == 0) keyExpansion();
-        //`_LOG($sformatf("Input = %0h", {>>{din}}))
-        //`_LOG($sformatf("Key   = %0h", {>>{this.key_r}}))
         `_LOG_S("Input = %0h\n", din)
         `_LOG_S("Key   = %0h\n", this.key_r, KEY_SIZE)
         addRoundKey(0, state);
@@ -112,13 +106,10 @@ class CoreAES#(KEY_SIZE = 128) extends RijndaelPreliminaries;
         `_LOG($sformatf("Round %02d:", Nr))
         `_LOG_S(" %32h", state)
         subBytes(state);
-        //`_LOG($sformatf("--> subBytes --> %032h", {>>{state}}))
         `_LOG_S("--> subBytes --> %32h", state)
         shiftRows(state);
-        //`_LOG($sformatf("--> shiftRows --> %032h", {>>{state}}))
         `_LOG_S("--> shiftRows --> %32h", state)
         addRoundKey(Nr, state);
-        //`_LOG($sformatf("--> addRoundKey --> %032h \n", {>>{state}}))
         `_LOG_S("--> addRoundKey --> %32h\n", state)
         dout = state;
         `_LOG_S("Output = %0h \n\n", dout)
@@ -142,7 +133,6 @@ class CoreAES#(KEY_SIZE = 128) extends RijndaelPreliminaries;
             addRoundKey(i, state);
             `_LOG($sformatf("round[%2d].ik_sch ", i)) `_LOG_S("%032h\n", state)
             invMixColumns(state);
-            //`_LOG($sformatf("round[%2d].ik_sch", i)) `_LOG_S("%032h", state)
         end
         `_LOG($sformatf("round[%2d].iinput ", 1)) `_LOG_S("%032h\n", state)
         invShiftRows(state);
