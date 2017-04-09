@@ -21,8 +21,6 @@ virtual class LogBase;
         is_muted = 0;
     endfunction: setLogging
 
-    `define _LOG(s) `LOG(s, is_muted)
-
 endclass
 
 `endif 

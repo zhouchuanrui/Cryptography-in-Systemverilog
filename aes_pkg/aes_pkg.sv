@@ -9,12 +9,8 @@
 
 package aes_pkg;
 
-`define LOG(s, off) \
-    `ifndef NO_LOG \
-    if (!off) $write(s); \
-    `endif
-
-    `include "LogBase.svh"
+    `include "base_macros.svh"
+    import base_pkg::LogBase;
     `include "RijndaelPreliminaries.svh"
     `include "CoreAES.svh"
     typedef CoreAES#(128) AES128;
