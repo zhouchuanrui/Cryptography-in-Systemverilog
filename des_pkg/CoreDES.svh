@@ -39,6 +39,32 @@ endclass
 
 virtual class DESPreliminaries extends DESTypes;
 
+    static protected function _tL64 mTransInitPermutation (_tL64 din);
+        return {
+            din[58], din[50], din[42], din[34], din[26], din[18], din[10], din[2],
+            din[60], din[52], din[44], din[36], din[28], din[20], din[12], din[4],
+            din[62], din[54], din[46], din[38], din[30], din[22], din[14], din[6],
+            din[64], din[56], din[48], din[40], din[32], din[24], din[16], din[8],
+            din[57], din[49], din[41], din[33], din[25], din[17], din[9],  din[1],
+            din[59], din[51], din[43], din[35], din[27], din[19], din[11], din[3],
+            din[61], din[53], din[45], din[37], din[29], din[21], din[13], din[5],
+            din[63], din[55], din[47], din[39], din[31], din[23], din[15], din[7]
+        };
+    endfunction
+
+    static protected function _tL64 mTransInitPermutationInv (_tL64 din);
+        return {
+            din[40], din[8], din[48], din[16], din[56], din[24], din[64], din[32],
+            din[39], din[7], din[47], din[15], din[55], din[23], din[63], din[31],
+            din[38], din[6], din[46], din[14], din[54], din[22], din[62], din[30],
+            din[37], din[5], din[45], din[13], din[53], din[21], din[61], din[29],
+            din[36], din[4], din[44], din[12], din[52], din[20], din[60], din[28],
+            din[35], din[3], din[43], din[11], din[51], din[19], din[59], din[27],
+            din[34], din[2], din[42], din[10], din[50], din[18], din[58], din[26],
+            din[33], din[1], din[41], din[9],  din[49], din[17], din[57], din[25],
+        };
+    endfunction
+
     static protected function _tL48 fTransETable (_tL32 di);
         return {
             di[32], di[1],  di[2],  di[3],  di[4],  di[5],
@@ -166,6 +192,45 @@ virtual class DESPreliminaries extends DESTypes;
     endfunction
 
 endclass: DESPreliminaries 
+
+class CoreDES extends DESPreliminaries;
+    protected bit sub_key_updated;
+    protected _tL64 key_r;
+    protected _tL48 sub_key[1:16];
+
+    function new(_tL64 key = 0);
+        this.key_r = key;
+        sub_key_updated = 0;
+        is_muted = 1;
+    endfunction
+
+    function void setKey(_tL64 key);
+        if (this.key_r == key) begin
+            `_LOG("Use latched key..")
+        end else begin
+            sub_key_updated = 0;
+            this.key_r = key;
+        end
+    endfunction
+
+    protected function void subKeyUpdate ();
+        if (sub_key_updated == 1) return;
+        else begin
+            uCD ucd;
+            _tL28 c, d;
+            ucd = ksPC_1(this.key_r);
+            for (int i = 1; i <= 16; i++) begin
+                `rotl(c, shiftTable[i])
+                `rotl(d, shiftTable[i])
+                ucd.sub.c = c;
+                ucd.sub.d = d;
+                sub_key[i] = ksPC_2(ucd);
+            end
+        end
+        sub_key_updated = 1;
+    endfunction: subKeyUpdate
+
+endclass: CoreDES 
 
 `endif
 
