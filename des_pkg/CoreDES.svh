@@ -230,6 +230,28 @@ class CoreDES extends DESPreliminaries;
         sub_key_updated = 1;
     endfunction: subKeyUpdate
 
+    function uBlockT encrypt (uBlockT bdata);
+        subKeyUpdate();
+        enctypt = mTransInitPermutation(bdata);
+        for(int i = 1; i <= 16; i++) begin
+            enctypt = {enctypt.sub.r, 
+                enctypt.sub.l^fTrans(enctypt.sub.r, sub_key[i])};
+        end
+        enctypt = {enctypt.sub.r, enctypt.sub.l};
+        enctypt = mTransInitPermutationInv(enctypt);
+    endfunction
+
+    function uBlockT decrypt (uBlockT bdata);
+        subKeyUpdate();
+        decrypt = mTransInitPermutation(bdata);
+        decrypt = {decrypt.sub.r, decrypt.sub.l};
+        for(int i = 16; i >= 1; i--) begin
+            decrypt = {
+                decrypt.sub.r^fTrans(decrypt.sub.l, sub_key[i]),
+                decrypt.sub.l};
+        end
+        decrypt = mTransInitPermutationInv(decrypt);
+    endfunction: decrypt
 endclass: CoreDES 
 
 `endif
