@@ -61,7 +61,7 @@ virtual class DESPreliminaries extends DESTypes;
             din[36], din[4], din[44], din[12], din[52], din[20], din[60], din[28],
             din[35], din[3], din[43], din[11], din[51], din[19], din[59], din[27],
             din[34], din[2], din[42], din[10], din[50], din[18], din[58], din[26],
-            din[33], din[1], din[41], din[9],  din[49], din[17], din[57], din[25],
+            din[33], din[1], din[41], din[9],  din[49], din[17], din[57], din[25]
         };
     endfunction
 
@@ -77,7 +77,7 @@ virtual class DESPreliminaries extends DESTypes;
             di[28], di[29], di[30], di[31], di[32], di[1] };
     endfunction: fTransETable
     
-    typedef struct packed {_tL4 v[0:63];} _ST;
+    typedef struct {_tL4 v[0:63];} _ST;
     static protected const _ST STable[1:8] = '{
         '{{
             14, 4, 13, 1, 2, 15, 11, 8, 3, 10, 6, 12, 5, 9, 0, 7,
@@ -152,7 +152,7 @@ virtual class DESPreliminaries extends DESTypes;
         _tL32 tmp32;
         tmp48 = fTransETable(lr);
         tmp48 ^= sub_key;
-        `define _sbox(n) STable[n].v[tmp48[6*n-5:6*n]]
+        `define _sbox(n) valueSBox(tmp48[6*n-5:6*n], 8)
 
         tmp32 = {
             `_sbox(1), `_sbox(2), `_sbox(3), `_sbox(4),
@@ -206,7 +206,7 @@ class CoreDES extends DESPreliminaries;
 
     function void setKey(_tL64 key);
         if (this.key_r == key) begin
-            `_LOG("Use latched key..")
+            `_LOG("Use latched key..\n")
         end else begin
             sub_key_updated = 0;
             this.key_r = key;
@@ -232,17 +232,22 @@ class CoreDES extends DESPreliminaries;
 
     function uBlockT encrypt (uBlockT bdata);
         subKeyUpdate();
-        enctypt = mTransInitPermutation(bdata);
+        `_LOG($sformatf("KEY = %016h\n", this.key_r))
+        `_LOG($sformatf("PLAINTEXT = %016h\n", bdata))
+        encrypt = mTransInitPermutation(bdata);
         for(int i = 1; i <= 16; i++) begin
-            enctypt = {enctypt.sub.r, 
-                enctypt.sub.l^fTrans(enctypt.sub.r, sub_key[i])};
+            encrypt = {encrypt.sub.r, 
+                encrypt.sub.l^fTrans(encrypt.sub.r, sub_key[i])};
         end
-        enctypt = {enctypt.sub.r, enctypt.sub.l};
-        enctypt = mTransInitPermutationInv(enctypt);
+        encrypt = {encrypt.sub.r, encrypt.sub.l};
+        encrypt = mTransInitPermutationInv(encrypt);
+        `_LOG($sformatf("CIPHERTEXT = %016h\n", encrypt))
     endfunction
 
     function uBlockT decrypt (uBlockT bdata);
         subKeyUpdate();
+        `_LOG($sformatf("KEY = %016h\n", this.key_r))
+        `_LOG($sformatf("CIPHERTEXT = %016h\n", bdata))
         decrypt = mTransInitPermutation(bdata);
         decrypt = {decrypt.sub.r, decrypt.sub.l};
         for(int i = 16; i >= 1; i--) begin
@@ -251,6 +256,7 @@ class CoreDES extends DESPreliminaries;
                 decrypt.sub.l};
         end
         decrypt = mTransInitPermutationInv(decrypt);
+        `_LOG($sformatf("PLAINTEXT = %016h\n", decrypt))
     endfunction: decrypt
 endclass: CoreDES 
 

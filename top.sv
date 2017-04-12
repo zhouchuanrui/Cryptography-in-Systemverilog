@@ -1,7 +1,7 @@
 
 module top ();
-    initial
-    begin
+
+    task aes_test ();
         bit[7:0] dout[], din[], key[];
         aes_pkg::AES128 aes_128;
         aes_pkg::AES192 aes_192;
@@ -47,6 +47,25 @@ module top ();
         din = {>>byte{128'h8ea2b7ca516745bfeafc49904b496089}};
         aes_256.decrypt(din, dout);
 
+    endtask
+
+    task des_test ();
+        bit[63:0] tmp;
+        des_pkg::CoreDES des_h;
+        des_h = new();
+        des_h.setLogging();
+        des_h.setKey(0);
+        tmp = des_h.encrypt(0);
+        tmp = des_h.decrypt(tmp);
+        des_h.setKey(64'h7ca110454a1a6e57);
+        tmp = des_h.encrypt(64'h01a1d6d039776742);
+        tmp = des_h.decrypt(tmp);
+    endtask: des_test
+
+    initial
+    begin
+        //aes_test();
+        des_test();
         #1;
         //$finish(0);
     end
