@@ -151,12 +151,16 @@ virtual class DESPreliminaries extends DESTypes;
         _tL48 tmp48;
         _tL32 tmp32;
         tmp48 = fTransETable(lr);
+        `_LOG($sformatf("....after ETable %012h\n", tmp48))
         tmp48 ^= sub_key;
-        `define _sbox(n) valueSBox(tmp48[6*n-5:6*n], 8)
+        `_LOG($sformatf("....XOR with %012h --> %012h\n", sub_key, tmp48))
+        `define _sbox(n) valueSBox(tmp48[6*n-5:6*n], n)
 
         tmp32 = {
             `_sbox(1), `_sbox(2), `_sbox(3), `_sbox(4),
             `_sbox(5), `_sbox(6), `_sbox(7), `_sbox(8) };
+        `_LOG($sformatf("....after SBox %08h\n", tmp32))
+        `_LOG($sformatf("....after PTable %08h\n", fTransPTable(tmp32)))
         return fTransPTable(tmp32);
     endfunction: fTrans
 
@@ -217,13 +221,13 @@ class CoreDES extends DESPreliminaries;
         if (sub_key_updated == 1) return;
         else begin
             uCD ucd;
-            _tL28 c, d;
+            //_tL28 c, d;
             ucd = ksPC_1(this.key_r);
             for (int i = 1; i <= 16; i++) begin
-                `rotl(c, shiftTable[i])
-                `rotl(d, shiftTable[i])
-                ucd.sub.c = c;
-                ucd.sub.d = d;
+                ucd.sub.c = `rotl(ucd.sub.c, shiftTable[i]);
+                ucd.sub.d = `rotl(ucd.sub.d, shiftTable[i]);
+                //ucd.sub.c = c;
+                //ucd.sub.d = d;
                 sub_key[i] = ksPC_2(ucd);
             end
         end
@@ -235,13 +239,15 @@ class CoreDES extends DESPreliminaries;
         `_LOG($sformatf("KEY = %016h\n", this.key_r))
         `_LOG($sformatf("PLAINTEXT = %016h\n", bdata))
         encrypt = mTransInitPermutation(bdata);
+        `_LOG($sformatf("..after IP %016h\n", encrypt))
         for(int i = 1; i <= 16; i++) begin
+            `_LOG($sformatf("..Round %0d\n", i))
             encrypt = {encrypt.sub.r, 
                 encrypt.sub.l^fTrans(encrypt.sub.r, sub_key[i])};
         end
         encrypt = {encrypt.sub.r, encrypt.sub.l};
         encrypt = mTransInitPermutationInv(encrypt);
-        `_LOG($sformatf("CIPHERTEXT = %016h\n", encrypt))
+        `_LOG($sformatf("CIPHERTEXT = %016h\n\n", encrypt))
     endfunction
 
     function uBlockT decrypt (uBlockT bdata);
@@ -249,14 +255,16 @@ class CoreDES extends DESPreliminaries;
         `_LOG($sformatf("KEY = %016h\n", this.key_r))
         `_LOG($sformatf("CIPHERTEXT = %016h\n", bdata))
         decrypt = mTransInitPermutation(bdata);
+        `_LOG($sformatf("..after IP %016h\n", decrypt))
         decrypt = {decrypt.sub.r, decrypt.sub.l};
         for(int i = 16; i >= 1; i--) begin
+            `_LOG($sformatf("..Round %0d\n", i))
             decrypt = {
                 decrypt.sub.r^fTrans(decrypt.sub.l, sub_key[i]),
                 decrypt.sub.l};
         end
         decrypt = mTransInitPermutationInv(decrypt);
-        `_LOG($sformatf("PLAINTEXT = %016h\n", decrypt))
+        `_LOG($sformatf("PLAINTEXT = %016h\n\n", decrypt))
     endfunction: decrypt
 endclass: CoreDES 
 
