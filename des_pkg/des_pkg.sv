@@ -10,6 +10,7 @@
 package des_pkg;
     `include "base_macros.svh"
     import base_pkg::LogBase;
+    `include "DESPreliminaries.svh"
     `include "CoreDES.svh"
 endpackage
 

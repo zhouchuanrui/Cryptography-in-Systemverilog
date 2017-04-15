@@ -77,11 +77,8 @@ module top ();
         end 
 
         `__ENC_KAT(64'h0131d9619dc1376e, 64'h5cd54ca83def57da, 64'h7a389d10354bd271)
-
         `__ENC_KAT(64'h07a1133e4a0b2686, 64'h0248d43806f67172, 64'h868ebb51cab4599a)
-
         `__ENC_KAT(64'h3849674c2602319e, 64'h51454b582ddf440a, 64'h7178876e01f19b2a)
-
         `__ENC_KAT(64'h04b915ba43feb5b6, 64'h42fd443059577fa2, 64'haf37fb421f8c4095)
 
         `define __DEC_KAT(key, ctxt, ptxt) \
@@ -98,6 +95,19 @@ module top ();
         `__DEC_KAT(64'h49e95d6d4ca229bf, 64'h5a6b612cc26cce4a, 64'h02fe55778117f12a)
         `__DEC_KAT(64'h018310dc409b26d6, 64'h5f4c038ed12b2e41, 64'h1d9d5c5018f728c2)
         `__DEC_KAT(64'h1c587f1c13924fef, 64'h63fac0d034d9f793, 64'h305532286d6f295a)
+
+        `define __ASST_ENC(key, ptxt, ctxt) \
+        assert(ctxt == des_h.encrypt(ptxt)) begin \
+            $display("ENC(%016h) with %016h = %016h.. PASS", ptxt, key, ctxt); \
+        end else begin \
+            $display("ENC(%016h) with %016h != %016h.. get %016h", ptxt, key, ctxt, des_h.encrypt(ptxt)); \
+        end 
+
+        `define __ENCQ_KAT(key, ptxt_q, ctxt_q) \
+        des_h.setKey(key); \
+        foreach(ptxt_q[i]) begin \
+        end
+
 
     endtask: des_test
 
