@@ -103,11 +103,43 @@ module top ();
             $display("ENC(%016h) with %016h != %016h.. get %016h", ptxt, key, ctxt, des_h.encrypt(ptxt)); \
         end 
 
-        `define __ENCQ_KAT(key, ptxt_q, ctxt_q) \
+        `define __ENCQ_KAT(key, pctxt_q) \
         des_h.setKey(key); \
-        foreach(ptxt_q[i]) begin \
+        for(int i = 0; i < pctxt_q.size(); i+=2) begin \
+            `__ASST_ENC(key, pctxt_q[i], pctxt_q[i+1]) \
         end
 
+        `define __ASST_DEC(key, ctxt, ptxt) \
+        assert(ptxt == des_h.decrypt(ctxt)) begin \
+            $display("DEC(%016h) with %016h = %016h.. PASS", ctxt, key, ptxt); \
+        end else begin \
+            $display("DEC(%016h) with %016h != %016h.. get %016h", ctxt, key, ptxt, des_h.encrypt(ctxt)); \
+        end 
+
+        `define __DECQ_KAT(key, pctxt_q) \
+        des_h.setKey(key); \
+        for(int i = 0; i < pctxt_q.size(); i+=2) begin \
+            `__ASST_DEC(key, pctxt_q[i+1], pctxt_q[i]) \
+        end
+
+        begin
+            bit[1:64] key, datq[$];
+            key = 64'h0101010101010101;
+            datq = '{
+                64'h8000000000000000,
+                64'h95f8a5e5dd31d900,
+                64'h4000000000000000,
+                64'hdd7f121ca5015619,
+                64'h2000000000000000,
+                64'h2e8653104f3834ea,
+                64'h1000000000000000,
+                64'h4bd388ff6cd81d4f,
+                64'h0800000000000000,
+                64'h20b9e767b2fb1456
+            };
+            `__ENCQ_KAT(key, datq)
+            `__DECQ_KAT(key, datq)
+        end
 
     endtask: des_test
 

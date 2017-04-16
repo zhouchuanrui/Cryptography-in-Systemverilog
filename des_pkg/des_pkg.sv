@@ -12,5 +12,6 @@ package des_pkg;
     import base_pkg::LogBase;
     `include "DESPreliminaries.svh"
     `include "CoreDES.svh"
+    `include "CoreTDEA.svh"
 endpackage
 
