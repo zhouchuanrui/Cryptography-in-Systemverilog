@@ -143,10 +143,24 @@ module top ();
 
     endtask: des_test
 
+    task tdea_test ();
+        des_pkg::CoreTDEA tdea_h;
+        tdea_h = new();
+        tdea_h.setKey(
+            64'h9ec2372c86379df4,
+            64'had7ac4464f73805d,
+            64'h20c4f87564527c91
+        );
+        tdea_h.setLogging();
+        void'(tdea_h.encrypt(64'hb624d6bd41783ab1));
+        void'(tdea_h.decrypt(64'he2e7a74cb9e75418));
+    endtask: tdea_test
+
     initial
     begin
         //aes_test();
-        des_test();
+        //des_test();
+        tdea_test();
         #1;
         //$finish(0);
     end

@@ -18,7 +18,7 @@ class CoreDES extends DESPreliminaries;
     function new(_tL64 key = 0);
         this.key_r = key;
         sub_key_updated = 0;
-        is_muted = 1;
+        //is_muted = 1;
     endfunction
 
     function void setKey(_tL64 key);

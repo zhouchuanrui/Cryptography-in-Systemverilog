@@ -24,7 +24,7 @@ class CoreAES#(KEY_SIZE = 128) extends RijndaelPreliminaries;
 
     function new();
         is_key_expanded = 0;
-        is_muted = 1;
+        //is_muted = 1;
     endfunction
 
     function void setKey (const ref bit[7:0] kin[]);
