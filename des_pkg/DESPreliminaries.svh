@@ -35,6 +35,9 @@ virtual class DESTypes extends LogBase;
         struct packed{_tL28 c, d;} sub;
     } uCD;
 
+    typedef enum {
+        DES, TDEA
+    } eDESType;
 endclass
 
 virtual class DESPreliminaries extends DESTypes;

@@ -146,14 +146,23 @@ module top ();
     task tdea_test ();
         des_pkg::CoreTDEA tdea_h;
         tdea_h = new();
+        tdea_h.setLogging();
+        tdea_h.setKey(
+            64'h151f10383d6d199b,
+            64'h4a763bd54a46a445,
+            64'h151f10383d6d199b
+        );
+        void'(tdea_h.decrypt(64'h89321ba75ba545db));
+        void'(tdea_h.encrypt(64'hd8da89298878ed7d));
+
         tdea_h.setKey(
             64'h9ec2372c86379df4,
             64'had7ac4464f73805d,
             64'h20c4f87564527c91
         );
-        tdea_h.setLogging();
         void'(tdea_h.encrypt(64'hb624d6bd41783ab1));
         void'(tdea_h.decrypt(64'he2e7a74cb9e75418));
+
         tdea_h.setMuted();
 
         `define __TDEA_MC_ENC(key_q, ptxt) \

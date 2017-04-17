@@ -14,6 +14,7 @@ class CoreTDEA extends DESTypes;
     protected _tL64 key1, key2, key3;
     protected bit key_dispatched;
     protected CoreDES des1, des2, des3;
+    local static const eDESType this_type = TDEA;
     function new();
         key_dispatched = 0;
     endfunction
@@ -33,7 +34,7 @@ class CoreTDEA extends DESTypes;
             des2.setKey(this.key2);
             if (this.key1 == this.key3) begin
                 des3 = des1;
-                `_LOG("!!Use 2-Key mode")
+                `_LOG("!!Use 2-Key mode\n")
             end else begin
                 if (des3 == null) des3 = new();
                 des3.setKey(this.key3);

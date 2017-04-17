@@ -14,6 +14,7 @@ class CoreDES extends DESPreliminaries;
     protected bit sub_key_updated;
     protected _tL64 key_r;
     protected _tL48 sub_key[1:16];
+    local static const eDESType this_type = DES;
 
     function new(_tL64 key = 0);
         this.key_r = key;

@@ -13,5 +13,6 @@ package des_pkg;
     `include "DESPreliminaries.svh"
     `include "CoreDES.svh"
     `include "CoreTDEA.svh"
+    `include "DESByteWrapper.svh"
 endpackage
 
