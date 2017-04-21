@@ -49,6 +49,17 @@ static local function T get(); \
     return reg_obj; \
 endfunction
 
+`define __add_test(TN) \
+class TN; \
+    `__register(TN) \
+    local function new(); \
+        $display({"New in ", `"TN`"}); \
+    endfunction \
+    task test (); \
+        $display({"Test in ", `"TN`"}); \
+    endtask \
+endclass
+
 class aes_test extends TestPrototype;
     `__register(aes_test)
 
