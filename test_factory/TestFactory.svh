@@ -77,6 +77,16 @@ task demo_test ();
     TestFactory::run_test("fh");
 endtask: demo_test
 
+task factory_run_test ();
+    string tn;
+    if($value$plusargs("TEST=%s", tn)) begin
+        TestFactory::run_test(tn);
+    end
+    else begin
+        $display("Please offer a +TEST=<test_name> in simulation arguments");
+    end
+endtask: factory_run_test
+
 class aes_test extends TestPrototype;
     `__register(aes_test)
 
