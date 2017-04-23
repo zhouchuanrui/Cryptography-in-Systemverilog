@@ -14,7 +14,7 @@ virtual class TestPrototype;
     pure virtual task test ();
 endclass: TestPrototype
 
-class TestFactory extends LogBase;
+class TestFactory;
     static local TestPrototype tests[string];
 
     static function void register (TestPrototype obj, string test_name);
@@ -35,7 +35,7 @@ class TestFactory extends LogBase;
             return;
         end
         tests[test_name].test();
-    endfunction: run_test
+    endtask: run_test
 
 endclass
 
@@ -50,20 +50,37 @@ static local function T get(); \
 endfunction
 
 `define __add_test(TN) \
-class TN; \
+class TN extends TestPrototype; \
     `__register(TN) \
-    local function new(); \
-        $display({"New in ", `"TN`"}); \
+    function new(); \
+        $display("New in %s", `"TN`"); \
     endfunction \
     task test (); \
-        $display({"Test in ", `"TN`"}); \
+        $display("Test in %s", `"TN`"); \
     endtask \
 endclass
+
+`__add_test(foo)
+`__add_test(bar)
+`__add_test(baz)
+
+task demo_test ();
+    foo fh;
+    TestFactory::register(fh, "fh");
+    fh = new();
+    TestFactory::register(fh, "fh");
+
+    TestFactory::run_test("foo");
+    TestFactory::run_test("bar");
+    TestFactory::run_test("luis");
+    TestFactory::run_test("baz");
+    TestFactory::run_test("fh");
+endtask: demo_test
 
 class aes_test extends TestPrototype;
     `__register(aes_test)
 
-    task aes_test ();
+    task test ();
         bit[7:0] dout[], din[], key[];
         aes_pkg::AES128 aes_128;
         aes_pkg::AES192 aes_192;

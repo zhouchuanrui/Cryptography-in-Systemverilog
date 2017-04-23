@@ -253,9 +253,10 @@ module top ();
     begin
         //aes_test();
         //des_test();
-        tdea_test();
+        //tdea_test();
+        test_pkg::demo_test();
         #1;
-        //$finish(0);
+        $finish(0);
     end
 endmodule: top
 

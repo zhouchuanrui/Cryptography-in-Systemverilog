@@ -11,6 +11,6 @@ package test_pkg;
     `include "base_macros.svh"
     import base_pkg::LogBase;
 
-    `include "test_factory.svh"
+    `include "TestFactory.svh"
 endpackage
 
