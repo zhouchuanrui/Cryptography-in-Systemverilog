@@ -36,7 +36,7 @@ class DESByteWrapper #(type T = CoreDES) extends DESTypes;
         end
     endfunction: setKey
 
-    function void encrypt (const ref bit[7:0] din[], ref bit[7:0] dout[]);
+    function void encrypt (bit[7:0] din[], ref bit[7:0] dout[]);
         bit[1:64] tmp;
         assert(din.size() == 8)
         else $fatal(1, "Get non-192-bit block..");
@@ -45,7 +45,7 @@ class DESByteWrapper #(type T = CoreDES) extends DESTypes;
         dout = {>>byte{tmp}};
     endfunction
 
-    function void decrypt (const ref bit[7:0] din[], ref bit[7:0] dout[]);
+    function void decrypt (bit[7:0] din[], ref bit[7:0] dout[]);
         bit[1:64] tmp;
         assert(din.size() == 8)
         else $fatal(1, "Get non-192-bit block..");

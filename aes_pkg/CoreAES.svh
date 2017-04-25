@@ -27,7 +27,7 @@ class CoreAES#(KEY_SIZE = 128) extends RijndaelPreliminaries;
         //is_muted = 1;
     endfunction
 
-    function void setKey (const ref bit[7:0] kin[]);
+    function void setKey (bit[7:0] kin[]);
         assert (kin.size() == KEY_SIZE/8)
         else $fatal(1, "Wrong key size");
         if(kin != this.key_r) begin
@@ -83,7 +83,7 @@ class CoreAES#(KEY_SIZE = 128) extends RijndaelPreliminaries;
             {st[c*4+0], st[c*4+1], st[c*4+2], st[c*4+3]} ^= w[r*4+c];
     endfunction
 
-    function void encrypt (const ref bit[7:0] din[], ref bit[7:0] dout[]);
+    function void encrypt (bit[7:0] din[], ref bit[7:0] dout[]);
         bit[7:0] state[];
         assert(din.size == 16)
         else $fatal(1, "Get non-128-bit block..");
@@ -115,7 +115,7 @@ class CoreAES#(KEY_SIZE = 128) extends RijndaelPreliminaries;
         `_LOG_S("Output = %0h \n\n", dout)
     endfunction: encrypt
 
-    function void decrypt (const ref bit[7:0] din[], ref bit[7:0] dout[]);
+    function void decrypt (bit[7:0] din[], ref bit[7:0] dout[]);
         bit[7:0] state[];
         assert(din.size == 16)
         else $fatal(1, "Get non-128-bit block..");
