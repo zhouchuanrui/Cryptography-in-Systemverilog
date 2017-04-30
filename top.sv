@@ -243,7 +243,7 @@ module top ();
                 64'had530f35d7ee6f4a,
                 64'h28b717b6b12d6265,
                 64'h5d07db301ffc5a21
-            };
+            };https://zhouchuanrui.github.io/2017/03/28/note_asic/run_test_demo/
             `__TDEA_MC_ASST(kq, 64'hf008ef4c7ae50010, doq, 0)
         end
 
@@ -258,6 +258,7 @@ module top ();
         `ifdef __BASE_PKG
             $display("Get Base Package..");
         `endif
+
         test_pkg::factory_run_test();
         #1;
         $finish(0);
