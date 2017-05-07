@@ -64,6 +64,7 @@ endfunction
 
 task factory_run_test ();
     string tn;
+
     if($value$plusargs("TEST=%s", tn)) begin
         TestFactory::run_test(tn);
     end
