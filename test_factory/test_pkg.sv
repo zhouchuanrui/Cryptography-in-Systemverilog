@@ -12,5 +12,11 @@ package test_pkg;
     import base_pkg::LogBase;
 
     `include "TestFactory.svh"
+
+    `include "demo_test.svh"
+
+    `include "aes_test.svh"
+    `include "des_test.svh"
+    `include "tdea_test.svh"
 endpackage
 
