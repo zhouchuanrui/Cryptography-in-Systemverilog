@@ -104,5 +104,16 @@ task des_test ();
 
 endtask: des_test
 
+class des_test extends TestPrototype;
+    `__register(des_test)
+    function new();
+    endfunction
+
+    task test ();
+        des_test();
+    endtask: test
+
+endclass: des_test extends testp
+
 `endif
 
