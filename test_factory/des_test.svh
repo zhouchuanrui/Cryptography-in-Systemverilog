@@ -10,7 +10,7 @@
 `ifndef __DES_TEST_SVH
 `define __DES_TEST_SVH
 
-task des_test ();
+task des_test_vec ();
     bit[63:0] tmp;
     des_pkg::CoreDES des_h;
     des_h = new();
@@ -102,7 +102,7 @@ task des_test ();
         `__DECQ_KAT(key, datq)
     end
 
-endtask: des_test
+endtask: des_test_vec
 
 class des_test extends TestPrototype;
     `__register(des_test)
@@ -110,10 +110,10 @@ class des_test extends TestPrototype;
     endfunction
 
     task test ();
-        des_test();
+        des_test_vec();
     endtask: test
 
-endclass: des_test extends testp
+endclass: des_test
 
 `endif
 

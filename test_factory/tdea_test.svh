@@ -10,7 +10,7 @@
 `ifndef __TDEA_TEST_SVH
 `define __TDEA_TEST_SVH
 
-task tdea_test ();
+task tdea_test_vec ();
     des_pkg::CoreTDEA tdea_h;
     tdea_h = new();
     tdea_h.setLogging();
@@ -162,7 +162,16 @@ task tdea_test ();
         `__TDEA_MC_ASST(kq, 64'hf008ef4c7ae50010, doq, 0)
     end
 
-endtask: tdea_test
+endtask: tdea_test_vec
+
+class tdea_test extends TestPrototype;
+    `__register(tdea_test)
+    function new();
+    endfunction
+    task test ();
+        tdea_test_vec();
+    endtask: test
+endclass: tdea_test
 
 `endif
 
