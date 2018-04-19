@@ -13,6 +13,10 @@
 virtual class LogBase;
     static protected bit is_muted;
 
+    static function bit isMuted ();
+        return is_muted;
+    endfunction: isMuted
+
     static function void setMuted ();        
         is_muted = 1;
     endfunction: setMuted
