@@ -27,13 +27,17 @@ class CoreMD5 extends BaseHash#(512, 128, 128);
     endfunction
 
     virtual function void initState ();
-        bit_cnt = 0;
-        block_reg = 0;
-        msg_reg = '{};
-        state.a = 'h67452301;
-        state.b = 'hefcdab89;
-        state.c = 'h98badcfe;
-        state.d = 'h10325476;
+        //bit_cnt.mw = 0;
+        //bit_cnt.lw = 0;
+        this.bit_cnt = 0;
+        this.block_reg = 0;
+        this.msg_reg.delete();
+        this.state.a = 32'h67452301;
+        this.state.b = 32'hefcdab89;
+        this.state.c = 32'h98badcfe;
+        this.state.d = 32'h10325476;
+        //$display("bit_cnt: %0d", bit_cnt);
+        //$display("bit_cnt: %0h", state);
     endfunction
 
     static const protected byte unsigned
@@ -49,8 +53,7 @@ class CoreMD5 extends BaseHash#(512, 128, 128);
 
     `define _add_fun(fn) \
     static protected function void fn``fn ( \
-        tWord b, c, d, Wk, Ti, \
-        byte unsigned Rn, \
+        tWord b, c, d, Wk, Rn, Ti, \
         ref tWord a \
     ); \
         a += `fn(b, c, d) + Wk + Ti; \
@@ -82,86 +85,86 @@ class CoreMD5 extends BaseHash#(512, 128, 128);
             blkin >>= BLOCK_SISE/16;
         end
 
-        FF (bb, cc, dd, x[ 0], S11, 0xd76aa478, aa); /* 1 */
-        FF (aa, bb, cc, x[ 1], S12, 0xe8c7b756, dd); /* 2 */
-        FF (dd, aa, bb, x[ 2], S13, 0x242070db, cc); /* 3 */
-        FF (cc, dd, aa, x[ 3], S14, 0xc1bdceee, bb); /* 4 */
-        `LOG($sformatf("a:%0h, b:%0h, c:%0h, d:%0h", aa, bb, cc, dd))
-        FF (bb, cc, dd, x[ 4], S11, 0xf57c0faf, aa); /* 5 */
-        FF (aa, bb, cc, x[ 5], S12, 0x4787c62a, dd); /* 6 */
-        FF (dd, aa, bb, x[ 6], S13, 0xa8304613, cc); /* 7 */
-        FF (cc, dd, aa, x[ 7], S14, 0xfd469501, bb); /* 8 */
-        `LOG($sformatf("a:%0h, b:%0h, c:%0h, d:%0h", aa, bb, cc, dd))
-        FF (bb, cc, dd, x[ 8], S11, 0x698098d8, aa); /* 9 */
-        FF (aa, bb, cc, x[ 9], S12, 0x8b44f7af, dd); /* 10 */
-        FF (dd, aa, bb, x[10], S13, 0xffff5bb1, cc); /* 11 */
-        FF (cc, dd, aa, x[11], S14, 0x895cd7be, bb); /* 12 */
-        `LOG($sformatf("a:%0h, b:%0h, c:%0h, d:%0h", aa, bb, cc, dd))
-        FF (bb, cc, dd, x[12], S11, 0x6b901122, aa); /* 13 */
-        FF (aa, bb, cc, x[13], S12, 0xfd987193, dd); /* 14 */
-        FF (dd, aa, bb, x[14], S13, 0xa679438e, cc); /* 15 */
-        FF (cc, dd, aa, x[15], S14, 0x49b40821, bb); /* 16 */
-        `LOG($sformatf("a:%0h, b:%0h, c:%0h, d:%0h", aa, bb, cc, dd))
-        GG (bb, cc, dd, x[ 1], S21, 0xf61e2562, aa); /* 17 */
-        GG (aa, bb, cc, x[ 6], S22, 0xc040b340, dd); /* 18 */
-        GG (dd, aa, bb, x[11], S23, 0x265e5a51, cc); /* 19 */
-        GG (cc, dd, aa, x[ 0], S24, 0xe9b6c7aa, bb); /* 20 */
-        `LOG($sformatf("a:%0h, b:%0h, c:%0h, d:%0h", aa, bb, cc, dd))
-        GG (bb, cc, dd, x[ 5], S21, 0xd62f105d, aa); /* 21 */
-        GG (aa, bb, cc, x[10], S22,  0x2441453, dd); /* 22 */
-        GG (dd, aa, bb, x[15], S23, 0xd8a1e681, cc); /* 23 */
-        GG (cc, dd, aa, x[ 4], S24, 0xe7d3fbc8, bb); /* 24 */
-        `LOG($sformatf("a:%0h, b:%0h, c:%0h, d:%0h", aa, bb, cc, dd))
-        GG (bb, cc, dd, x[ 9], S21, 0x21e1cde6, aa); /* 25 */
-        GG (aa, bb, cc, x[14], S22, 0xc33707d6, dd); /* 26 */
-        GG (dd, aa, bb, x[ 3], S23, 0xf4d50d87, cc); /* 27 */
-        GG (cc, dd, aa, x[ 8], S24, 0x455a14ed, bb); /* 28 */
-        `LOG($sformatf("a:%0h, b:%0h, c:%0h, d:%0h", aa, bb, cc, dd))
-        GG (bb, cc, dd, x[13], S21, 0xa9e3e905, aa); /* 29 */
-        GG (aa, bb, cc, x[ 2], S22, 0xfcefa3f8, dd); /* 30 */
-        GG (dd, aa, bb, x[ 7], S23, 0x676f02d9, cc); /* 31 */
-        GG (cc, dd, aa, x[12], S24, 0x8d2a4c8a, bb); /* 32 */
-        `LOG($sformatf("a:%0h, b:%0h, c:%0h, d:%0h", aa, bb, cc, dd))
-        HH (bb, cc, dd, x[ 5], S31, 0xfffa3942, aa); /* 33 */
-        HH (aa, bb, cc, x[ 8], S32, 0x8771f681, dd); /* 34 */
-        HH (dd, aa, bb, x[11], S33, 0x6d9d6122, cc); /* 35 */
-        HH (cc, dd, aa, x[14], S34, 0xfde5380c, bb); /* 36 */
-        `LOG($sformatf("a:%0h, b:%0h, c:%0h, d:%0h", aa, bb, cc, dd))
-        HH (bb, cc, dd, x[ 1], S31, 0xa4beea44, aa); /* 37 */
-        HH (aa, bb, cc, x[ 4], S32, 0x4bdecfa9, dd); /* 38 */
-        HH (dd, aa, bb, x[ 7], S33, 0xf6bb4b60, cc); /* 39 */
-        HH (cc, dd, aa, x[10], S34, 0xbebfbc70, bb); /* 40 */
-        `LOG($sformatf("a:%0h, b:%0h, c:%0h, d:%0h", aa, bb, cc, dd))
-        HH (bb, cc, dd, x[13], S31, 0x289b7ec6, aa); /* 41 */
-        HH (aa, bb, cc, x[ 0], S32, 0xeaa127fa, dd); /* 42 */
-        HH (dd, aa, bb, x[ 3], S33, 0xd4ef3085, cc); /* 43 */
-        HH (cc, dd, aa, x[ 6], S34,  0x4881d05, bb); /* 44 */
-        `LOG($sformatf("a:%0h, b:%0h, c:%0h, d:%0h", aa, bb, cc, dd))
-        HH (bb, cc, dd, x[ 9], S31, 0xd9d4d039, aa); /* 45 */
-        HH (aa, bb, cc, x[12], S32, 0xe6db99e5, dd); /* 46 */
-        HH (dd, aa, bb, x[15], S33, 0x1fa27cf8, cc); /* 47 */
-        HH (cc, dd, aa, x[ 2], S34, 0xc4ac5665, bb); /* 48 */
-        `LOG($sformatf("a:%0h, b:%0h, c:%0h, d:%0h", aa, bb, cc, dd))
-        II (bb, cc, dd, x[ 0], S41, 0xf4292244, aa); /* 49 */
-        II (aa, bb, cc, x[ 7], S42, 0x432aff97, dd); /* 50 */
-        II (dd, aa, bb, x[14], S43, 0xab9423a7, cc); /* 51 */
-        II (cc, dd, aa, x[ 5], S44, 0xfc93a039, bb); /* 52 */
-        `LOG($sformatf("a:%0h, b:%0h, c:%0h, d:%0h", aa, bb, cc, dd))
-        II (bb, cc, dd, x[12], S41, 0x655b59c3, aa); /* 53 */
-        II (aa, bb, cc, x[ 3], S42, 0x8f0ccc92, dd); /* 54 */
-        II (dd, aa, bb, x[10], S43, 0xffeff47d, cc); /* 55 */
-        II (cc, dd, aa, x[ 1], S44, 0x85845dd1, bb); /* 56 */
-        `LOG($sformatf("a:%0h, b:%0h, c:%0h, d:%0h", aa, bb, cc, dd))
-        II (bb, cc, dd, x[ 8], S41, 0x6fa87e4f, aa); /* 57 */
-        II (aa, bb, cc, x[15], S42, 0xfe2ce6e0, dd); /* 58 */
-        II (dd, aa, bb, x[ 6], S43, 0xa3014314, cc); /* 59 */
-        II (cc, dd, aa, x[13], S44, 0x4e0811a1, bb); /* 60 */
-        `LOG($sformatf("a:%0h, b:%0h, c:%0h, d:%0h", aa, bb, cc, dd))
-        II (bb, cc, dd, x[ 4], S41, 0xf7537e82, aa); /* 61 */
-        II (aa, bb, cc, x[11], S42, 0xbd3af235, dd); /* 62 */
-        II (dd, aa, bb, x[ 2], S43, 0x2ad7d2bb, cc); /* 63 */
-        II (cc, dd, aa, x[ 9], S44, 0xeb86d391, bb); /* 64 */
-        `LOG($sformatf("a:%0h, b:%0h, c:%0h, d:%0h", aa, bb, cc, dd))
+        FF (bb, cc, dd, X[ 0], S11, 32'hd76aa478, aa); /* 1 */
+        FF (aa, bb, cc, X[ 1], S12, 32'he8c7b756, dd); /* 2 */
+        FF (dd, aa, bb, X[ 2], S13, 32'h242070db, cc); /* 3 */
+        FF (cc, dd, aa, X[ 3], S14, 32'hc1bdceee, bb); /* 4 */
+        `_LOG($sformatf("a:%0h, b:%0h, c:%0h, d:%0h \n", aa, bb, cc, dd))
+        FF (bb, cc, dd, X[ 4], S11, 32'hf57c0faf, aa); /* 5 */
+        FF (aa, bb, cc, X[ 5], S12, 32'h4787c62a, dd); /* 6 */
+        FF (dd, aa, bb, X[ 6], S13, 32'ha8304613, cc); /* 7 */
+        FF (cc, dd, aa, X[ 7], S14, 32'hfd469501, bb); /* 8 */
+        `_LOG($sformatf("a:%0h, b:%0h, c:%0h, d:%0h \n", aa, bb, cc, dd))
+        FF (bb, cc, dd, X[ 8], S11, 32'h698098d8, aa); /* 9 */
+        FF (aa, bb, cc, X[ 9], S12, 32'h8b44f7af, dd); /* 10 */
+        FF (dd, aa, bb, X[10], S13, 32'hffff5bb1, cc); /* 11 */
+        FF (cc, dd, aa, X[11], S14, 32'h895cd7be, bb); /* 12 */
+        `_LOG($sformatf("a:%0h, b:%0h, c:%0h, d:%0h \n", aa, bb, cc, dd))
+        FF (bb, cc, dd, X[12], S11, 32'h6b901122, aa); /* 13 */
+        FF (aa, bb, cc, X[13], S12, 32'hfd987193, dd); /* 14 */
+        FF (dd, aa, bb, X[14], S13, 32'ha679438e, cc); /* 15 */
+        FF (cc, dd, aa, X[15], S14, 32'h49b40821, bb); /* 16 */
+        `_LOG($sformatf("a:%0h, b:%0h, c:%0h, d:%0h \n", aa, bb, cc, dd))
+        GG (bb, cc, dd, X[ 1], S21, 32'hf61e2562, aa); /* 17 */
+        GG (aa, bb, cc, X[ 6], S22, 32'hc040b340, dd); /* 18 */
+        GG (dd, aa, bb, X[11], S23, 32'h265e5a51, cc); /* 19 */
+        GG (cc, dd, aa, X[ 0], S24, 32'he9b6c7aa, bb); /* 20 */
+        `_LOG($sformatf("a:%0h, b:%0h, c:%0h, d:%0h \n", aa, bb, cc, dd))
+        GG (bb, cc, dd, X[ 5], S21, 32'hd62f105d, aa); /* 21 */
+        GG (aa, bb, cc, X[10], S22,  32'h2441453, dd); /* 22 */
+        GG (dd, aa, bb, X[15], S23, 32'hd8a1e681, cc); /* 23 */
+        GG (cc, dd, aa, X[ 4], S24, 32'he7d3fbc8, bb); /* 24 */
+        `_LOG($sformatf("a:%0h, b:%0h, c:%0h, d:%0h \n", aa, bb, cc, dd))
+        GG (bb, cc, dd, X[ 9], S21, 32'h21e1cde6, aa); /* 25 */
+        GG (aa, bb, cc, X[14], S22, 32'hc33707d6, dd); /* 26 */
+        GG (dd, aa, bb, X[ 3], S23, 32'hf4d50d87, cc); /* 27 */
+        GG (cc, dd, aa, X[ 8], S24, 32'h455a14ed, bb); /* 28 */
+        `_LOG($sformatf("a:%0h, b:%0h, c:%0h, d:%0h \n", aa, bb, cc, dd))
+        GG (bb, cc, dd, X[13], S21, 32'ha9e3e905, aa); /* 29 */
+        GG (aa, bb, cc, X[ 2], S22, 32'hfcefa3f8, dd); /* 30 */
+        GG (dd, aa, bb, X[ 7], S23, 32'h676f02d9, cc); /* 31 */
+        GG (cc, dd, aa, X[12], S24, 32'h8d2a4c8a, bb); /* 32 */
+        `_LOG($sformatf("a:%0h, b:%0h, c:%0h, d:%0h \n", aa, bb, cc, dd))
+        HH (bb, cc, dd, X[ 5], S31, 32'hfffa3942, aa); /* 33 */
+        HH (aa, bb, cc, X[ 8], S32, 32'h8771f681, dd); /* 34 */
+        HH (dd, aa, bb, X[11], S33, 32'h6d9d6122, cc); /* 35 */
+        HH (cc, dd, aa, X[14], S34, 32'hfde5380c, bb); /* 36 */
+        `_LOG($sformatf("a:%0h, b:%0h, c:%0h, d:%0h \n", aa, bb, cc, dd))
+        HH (bb, cc, dd, X[ 1], S31, 32'ha4beea44, aa); /* 37 */
+        HH (aa, bb, cc, X[ 4], S32, 32'h4bdecfa9, dd); /* 38 */
+        HH (dd, aa, bb, X[ 7], S33, 32'hf6bb4b60, cc); /* 39 */
+        HH (cc, dd, aa, X[10], S34, 32'hbebfbc70, bb); /* 40 */
+        `_LOG($sformatf("a:%0h, b:%0h, c:%0h, d:%0h \n", aa, bb, cc, dd))
+        HH (bb, cc, dd, X[13], S31, 32'h289b7ec6, aa); /* 41 */
+        HH (aa, bb, cc, X[ 0], S32, 32'heaa127fa, dd); /* 42 */
+        HH (dd, aa, bb, X[ 3], S33, 32'hd4ef3085, cc); /* 43 */
+        HH (cc, dd, aa, X[ 6], S34,  32'h4881d05, bb); /* 44 */
+        `_LOG($sformatf("a:%0h, b:%0h, c:%0h, d:%0h \n", aa, bb, cc, dd))
+        HH (bb, cc, dd, X[ 9], S31, 32'hd9d4d039, aa); /* 45 */
+        HH (aa, bb, cc, X[12], S32, 32'he6db99e5, dd); /* 46 */
+        HH (dd, aa, bb, X[15], S33, 32'h1fa27cf8, cc); /* 47 */
+        HH (cc, dd, aa, X[ 2], S34, 32'hc4ac5665, bb); /* 48 */
+        `_LOG($sformatf("a:%0h, b:%0h, c:%0h, d:%0h \n", aa, bb, cc, dd))
+        II (bb, cc, dd, X[ 0], S41, 32'hf4292244, aa); /* 49 */
+        II (aa, bb, cc, X[ 7], S42, 32'h432aff97, dd); /* 50 */
+        II (dd, aa, bb, X[14], S43, 32'hab9423a7, cc); /* 51 */
+        II (cc, dd, aa, X[ 5], S44, 32'hfc93a039, bb); /* 52 */
+        `_LOG($sformatf("a:%0h, b:%0h, c:%0h, d:%0h \n", aa, bb, cc, dd))
+        II (bb, cc, dd, X[12], S41, 32'h655b59c3, aa); /* 53 */
+        II (aa, bb, cc, X[ 3], S42, 32'h8f0ccc92, dd); /* 54 */
+        II (dd, aa, bb, X[10], S43, 32'hffeff47d, cc); /* 55 */
+        II (cc, dd, aa, X[ 1], S44, 32'h85845dd1, bb); /* 56 */
+        `_LOG($sformatf("a:%0h, b:%0h, c:%0h, d:%0h \n", aa, bb, cc, dd))
+        II (bb, cc, dd, X[ 8], S41, 32'h6fa87e4f, aa); /* 57 */
+        II (aa, bb, cc, X[15], S42, 32'hfe2ce6e0, dd); /* 58 */
+        II (dd, aa, bb, X[ 6], S43, 32'ha3014314, cc); /* 59 */
+        II (cc, dd, aa, X[13], S44, 32'h4e0811a1, bb); /* 60 */
+        `_LOG($sformatf("a:%0h, b:%0h, c:%0h, d:%0h \n", aa, bb, cc, dd))
+        II (bb, cc, dd, X[ 4], S41, 32'hf7537e82, aa); /* 61 */
+        II (aa, bb, cc, X[11], S42, 32'hbd3af235, dd); /* 62 */
+        II (dd, aa, bb, X[ 2], S43, 32'h2ad7d2bb, cc); /* 63 */
+        II (cc, dd, aa, X[ 9], S44, 32'heb86d391, bb); /* 64 */
+        `_LOG($sformatf("a:%0h, b:%0h, c:%0h, d:%0h \n", aa, bb, cc, dd))
 
         st_tmp.a += aa;
         st_tmp.b += bb;
@@ -180,7 +183,7 @@ class CoreMD5 extends BaseHash#(512, 128, 128);
                 block_reg[7:0] = msg_reg.pop_front();
                 block_reg <<= 8;
             end
-            block_reg[7:0] msg_reg.pop_front();
+            block_reg[7:0] = msg_reg.pop_front();
             state = transMD5(state, block_reg);
             block_reg = 0;
         end
@@ -191,7 +194,7 @@ class CoreMD5 extends BaseHash#(512, 128, 128);
         tWord pad_word;
         sState st_tmp;
         byte pad_msg[$];
-        `LOG($sformatf("Total Message size: %0d bit", bit_cnt))
+        `_LOG($sformatf("Total Message size: %0d bit \n", bit_cnt))
         msg_reg.push_back(8'h80);
         pad_len = (msg_reg.size()< BLOCK_SISE/8 - 8)?
             (BLOCK_SISE/8 - msg_reg.size() - 8):
@@ -215,13 +218,13 @@ class CoreMD5 extends BaseHash#(512, 128, 128);
             endianSwitch32(state.a),
             endianSwitch32(state.b),
             endianSwitch32(state.c),
-            endianSwitch32(state.d),
+            endianSwitch32(state.d)
         };
         initState();
-        `LOG($sformatf("[%s]Message digest: %0h", this_type.name(), st_tmp))
+        `_LOG($sformatf("[%s]Message digest: %0h \n", this_type.name(), st_tmp))
         return st_tmp;
     endfunction
 
-endclass: CoreMD5 extends BaseHash#(512, 128, 128)
+endclass: CoreMD5 
 `endif
 

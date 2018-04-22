@@ -15,6 +15,7 @@ class DESByteWrapper #(type T = CoreDES) extends DESTypes;
         obj = new();
     endfunction
 
+    /*
     function void setKey (bit [7:0] key_q[]);
         if(T::this_type == DES) begin
             assert(key_q.size() == 8)
@@ -35,6 +36,7 @@ class DESByteWrapper #(type T = CoreDES) extends DESTypes;
             end
         end
     endfunction: setKey
+    * */
 
     function void encrypt (bit[7:0] din[], ref bit[7:0] dout[]);
         bit[1:64] tmp;

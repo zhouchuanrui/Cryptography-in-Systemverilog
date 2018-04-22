@@ -13,10 +13,12 @@ package test_pkg;
 
     `include "TestFactory.svh"
 
-    `include "demo_test.svh"
+    //`include "demo_test.svh"
 
     `include "aes_test.svh"
     `include "des_test.svh"
     `include "tdea_test.svh"
+
+    `include "md5_test.svh"
 endpackage
 

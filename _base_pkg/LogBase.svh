@@ -11,7 +11,7 @@
 `define __LOG_BASE_SVH__
 
 virtual class LogBase;
-    static protected bit is_muted;
+    static protected bit is_muted = 1;
 
     static function bit isMuted ();
         return is_muted;

@@ -14,5 +14,7 @@ package des_pkg;
     `include "CoreDES.svh"
     `include "CoreTDEA.svh"
     `include "DESByteWrapper.svh"
+    typedef DESByteWrapper#(CoreDES) ByteDES;
+    typedef DESByteWrapper#(CoreTDEA) ByteTDEA;
 endpackage
 

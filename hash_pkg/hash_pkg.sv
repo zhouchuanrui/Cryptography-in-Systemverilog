@@ -10,5 +10,8 @@
 package hash_pkg;
     `include "base_macros.svh"
     import base_pkg::LogBase;
+
+    `include "BaseHash.svh"
+    `include "CoreMD5.svh"
 endpackage
 
