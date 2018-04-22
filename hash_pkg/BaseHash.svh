@@ -33,7 +33,7 @@ virtual class BaseHash#(BLOCK_SISE = 512, DIGEST_SIZE = 128, DIGEST_LEN = 128) e
         return this_type.name();
     endfunction: getName
 
-    static protected function tWord RTOR (
+    static protected function tWord ROTR (
         tWord din,
         int n
     );
@@ -43,7 +43,7 @@ virtual class BaseHash#(BLOCK_SISE = 512, DIGEST_SIZE = 128, DIGEST_LEN = 128) e
         return (din>>n)|(din<<(BLOCK_SISE/16-n));
     endfunction
 
-    static protected function tWord RTOL (
+    static protected function tWord ROTL (
         tWord din,
         int n
     );

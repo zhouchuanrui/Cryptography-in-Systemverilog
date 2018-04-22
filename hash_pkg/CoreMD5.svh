@@ -57,7 +57,7 @@ class CoreMD5 extends BaseHash#(512, 128, 128);
         ref tWord a \
     ); \
         a += `fn(b, c, d) + Wk + Ti; \
-        a = RTOL(a, Rn); \
+        a = ROTL(a, Rn); \
         a += b; \
     endfunction
 
