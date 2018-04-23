@@ -77,9 +77,9 @@ virtual class BaseHash#(BLOCK_SISE = 512, DIGEST_SIZE = 128, DIGEST_LEN = 128) e
         return (x&y)^(x&z)^(y&z);
     endfunction
 
-    virtual function void initState (); endfunction
-    virtual function void update (byte msg[$]); endfunction
-    virtual function tDigestTr getDigest (); endfunction
+    pure virtual function void initState ();
+    pure virtual function void update (byte msg[$]);
+    pure virtual function tDigestTr getDigest ();
 
     virtual function tDigestTr procWhole (
         byte msg[$]

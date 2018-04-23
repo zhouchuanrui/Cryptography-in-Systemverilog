@@ -43,7 +43,7 @@ class CoreSHA1 extends BaseHash#(512, 160, 160);
         Kt_2 = 32'h8f1bbcdc,
         Kt_3 = 32'hca62c1d6;
 
-    static protected function sState transSHA1 (
+    virtual function sState trans (
         sState stin, tBlock blkin
     );
         tWord a, b, c, d, e, T, W[0:79];
@@ -71,7 +71,7 @@ class CoreSHA1 extends BaseHash#(512, 160, 160);
                 T = ROTL(a, 5) + fMaj(b, c, d) + e + Kt_3 + W[t];
             end
             {e, d, c, b, a} = {d, c, ROTL(b, 30), a, T};
-            `_LOG($sformatf("[t=%02]abcde: %08h_%08h_%08h_%08h_%08h",
+            `_LOG($sformatf("[t=%02d]abcde: %08h_%08h_%08h_%08h_%08h",
                 t, a, b, c, d, e))
         end
         stin.h0 += a;
@@ -82,11 +82,9 @@ class CoreSHA1 extends BaseHash#(512, 160, 160);
         `_LOG($sformatf("[%s]out: %08h_%08h_%08h_%08h_%08h",
             this_type.name(), stin.h0, stin.h1, stin.h2, stin.h3, stin.h4))
         return stin;
-    endfunction: transSHA1
+    endfunction
 
-    virtual function void update (
-        byte msg[$]
-    );
+    virtual function void update (byte msg[$]); 
         bit_cnt += msg.size()*8;
         msg_reg = {msg_reg, msg};
         while(msg_reg.size() > BLOCK_SISE/8) begin
@@ -95,13 +93,12 @@ class CoreSHA1 extends BaseHash#(512, 160, 160);
                 block_reg <<= 8;
             end
             block_reg[7:0] = msg_reg.pop_front();
-            state = transSHA1(state, block_reg);
+            state = trans(state, block_reg);
             block_reg = 0;
         end
-    endfunction: update
+    endfunction
 
-    virtual function tDigestTr getDigest (
-    );
+    virtual function tDigestTr getDigest (); 
         int pad_len;
         tWord pad_word;
         sState st_tmp;
@@ -127,9 +124,10 @@ class CoreSHA1 extends BaseHash#(512, 160, 160);
         st_tmp = state;
 
         initState();
-        `_LOG($sformatf("[%s]Message digest: %0h", st_tmp))
-        return st_tmp
-    endfunction: getdig
+        `_LOG($sformatf("[%s]Message digest: %0h", this_type.name(), st_tmp))
+        return st_tmp;
+    endfunction
+
 endclass: CoreSHA1 
 `endif
 

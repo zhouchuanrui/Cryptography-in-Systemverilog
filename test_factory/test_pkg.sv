@@ -20,5 +20,6 @@ package test_pkg;
     `include "tdea_test.svh"
 
     `include "md5_test.svh"
+    `include "sha1_test.svh"
 endpackage
 
