@@ -52,7 +52,7 @@ class CoreSHA1 extends BaseHash#(512, 160, 160);
         for(byte i=0; i<16; i++) begin
             W[15-i] = blkin[31:0];
             blkin >>= 32;
-            `_LOG($sformatf("W[%02d] = %08h", 15-i, W[15-i]))
+            `_LOG($sformatf("W[%02d] = %08h\n", 15-i, W[15-i]))
         end
         for(byte i=16; i<80; i++) begin
             W[i] = ROTL((W[i-3]^W[i-8]^W[i-14]^W[i-16]), 1);
@@ -71,7 +71,7 @@ class CoreSHA1 extends BaseHash#(512, 160, 160);
                 T = ROTL(a, 5) + fMaj(b, c, d) + e + Kt_3 + W[t];
             end
             {e, d, c, b, a} = {d, c, ROTL(b, 30), a, T};
-            `_LOG($sformatf("[t=%02d]abcde: %08h_%08h_%08h_%08h_%08h",
+            `_LOG($sformatf("[t=%02d]abcde: %08h_%08h_%08h_%08h_%08h\n",
                 t, a, b, c, d, e))
         end
         stin.h0 += a;
@@ -79,7 +79,7 @@ class CoreSHA1 extends BaseHash#(512, 160, 160);
         stin.h2 += c;
         stin.h3 += d;
         stin.h4 += e;
-        `_LOG($sformatf("[%s]out: %08h_%08h_%08h_%08h_%08h",
+        `_LOG($sformatf("[%s]out: %08h_%08h_%08h_%08h_%08h\n",
             this_type.name(), stin.h0, stin.h1, stin.h2, stin.h3, stin.h4))
         return stin;
     endfunction
@@ -87,7 +87,7 @@ class CoreSHA1 extends BaseHash#(512, 160, 160);
     virtual function void update (byte msg[$]); 
         bit_cnt += msg.size()*8;
         msg_reg = {msg_reg, msg};
-        while(msg_reg.size() > BLOCK_SISE/8) begin
+        while(msg_reg.size() >= BLOCK_SISE/8) begin
             repeat(BLOCK_SISE/8-1) begin
                 block_reg[7:0] = msg_reg.pop_front();
                 block_reg <<= 8;
@@ -124,7 +124,7 @@ class CoreSHA1 extends BaseHash#(512, 160, 160);
         st_tmp = state;
 
         initState();
-        `_LOG($sformatf("[%s]Message digest: %0h", this_type.name(), st_tmp))
+        `_LOG($sformatf("[%s]Message digest: %0h\n", this_type.name(), st_tmp))
         return st_tmp;
     endfunction
 
