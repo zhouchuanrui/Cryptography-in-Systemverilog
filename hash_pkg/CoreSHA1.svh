@@ -68,7 +68,7 @@ class CoreSHA1 extends BaseHash#(512, 160, 160);
                 T = ROTL(a, 5) + fMaj(b, c, d) + e + Kt_2 + W[t];
             end
             else begin
-                T = ROTL(a, 5) + fMaj(b, c, d) + e + Kt_3 + W[t];
+                T = ROTL(a, 5) + fParity(b, c, d) + e + Kt_3 + W[t];
             end
             {e, d, c, b, a} = {d, c, ROTL(b, 30), a, T};
             `_LOG($sformatf("[t=%02d]abcde: %08h_%08h_%08h_%08h_%08h\n",
