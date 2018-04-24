@@ -68,7 +68,7 @@ virtual class BaseHash#(BLOCK_SISE = 512, DIGEST_SIZE = 128, DIGEST_LEN = 128) e
     static protected function tWord fParity (
         tWord x, y, z
     );
-        return x&y&z;
+        return x^y^z;
     endfunction
 
     static protected function tWord fMaj (
