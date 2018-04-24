@@ -11,8 +11,6 @@
 `define __SHA1_TEST_SVH
 class sha1_test extends TestPrototype;
     `__register(sha1_test)
-    function new();
-    endfunction
     task test ();
         hash_pkg::CoreSHA1 sha1;
         sha1 = new();

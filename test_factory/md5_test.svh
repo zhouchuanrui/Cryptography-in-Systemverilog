@@ -12,9 +12,6 @@
 
 class md5_test extends TestPrototype;
     `__register(md5_test)
-    function new();
-    endfunction
-
     task test ();
         hash_pkg::CoreMD5 md5;
         md5 = new();
