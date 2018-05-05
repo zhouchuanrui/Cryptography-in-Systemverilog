@@ -77,22 +77,6 @@ virtual class BaseHash#(BLOCK_SISE = 512, DIGEST_SIZE = 128, DIGEST_LEN = 128) e
         return (x&y)^(x&z)^(y&z);
     endfunction
 
-    static protected function tWord ucSigma0 (tWord x);
-        return ROTR(x, 2)^ROTR(x, 13)^ROTR(x, 22);
-    endfunction
-
-    static protected function tWord ucSigma1 (tWord x);
-        return ROTR(x, 6)^ROTR(x, 11)^ROTR(x, 25);
-    endfunction
-
-    static protected function tWord lcSigma0 (tWord x);
-        return ROTR(x, 7)^ROTR(x, 18)^(x >> 3);
-    endfunction
-
-    static protected function tWord lcSigma1 (tWord x);
-        return ROTR(x, 17)^ROTR(x, 19)^(x >> 10);
-    endfunction
-
     pure virtual function void initState ();
     pure virtual function void update (byte msg[$]);
     pure virtual function tDigestTr getDigest ();

@@ -29,6 +29,22 @@ pure class CoreSHA2S2#(DL=256) extends BaseHash#(512, 256, DL);
         32'h748f82ee, 32'h78a5636f, 32'h84c87814, 32'h8cc70208, 32'h90befffa, 32'ha4506ceb, 32'hbef9a3f7, 32'hc67178f2
     };
 
+    static protected function tWord ucSigma0 (tWord x);
+        return ROTR(x, 2)^ROTR(x, 13)^ROTR(x, 22);
+    endfunction
+
+    static protected function tWord ucSigma1 (tWord x);
+        return ROTR(x, 6)^ROTR(x, 11)^ROTR(x, 25);
+    endfunction
+
+    static protected function tWord lcSigma0 (tWord x);
+        return ROTR(x, 7)^ROTR(x, 18)^(x >> 3);
+    endfunction
+
+    static protected function tWord lcSigma1 (tWord x);
+        return ROTR(x, 17)^ROTR(x, 19)^(x >> 10);
+    endfunction
+
     virtual function sState trans (
         sState stin, tBlock blkin
     );
@@ -107,5 +123,48 @@ pure class CoreSHA2S2#(DL=256) extends BaseHash#(512, 256, DL);
     endfunction
 
 endclass
+
+class CoreSHA256 extends CoreSHA2s#(256);
+    function new();
+        this_type = HASH_SHA256;
+        initState();
+    endfunction
+
+    protected virtual function void initState ();
+        msg_reg = 0;
+        bit_cnt = 0;
+        block_reg = 0;
+        state.h[0] = 32'h6a09e667;
+        state.h[1] = 32'hbb67ae85;
+        state.h[2] = 32'h3c6ef372;
+        state.h[3] = 32'ha54ff53a;
+        state.h[4] = 32'h510e527f;
+        state.h[5] = 32'h9b05688c;
+        state.h[6] = 32'h1f83d9ab;
+        state.h[7] = 32'h5be0cd19;
+    endfunction: inits
+endclass: CoreSHA256 
+
+class CoreSHA224 extends CoreSHA2s#(224);
+    function new();
+        this_type = HASH_SHA224;
+        initState();
+    endfunction
+
+    protected virtual function void initState ();
+        msg_reg = 0;
+        bit_cnt = 0;
+        block_reg = 0;
+        state.h[0] = 32'hc1059ed8;
+        state.h[1] = 32'h367cd507;
+        state.h[2] = 32'h3070dd17;
+        state.h[3] = 32'hf70e5939;
+        state.h[4] = 32'hffc00b31;
+        state.h[5] = 32'h68581511;
+        state.h[6] = 32'h64f98fa7;
+        state.h[7] = 32'hbefa4fa4;
+    endfunction: inits
+endclass: CoreSHA224 
+
 `endif
 
