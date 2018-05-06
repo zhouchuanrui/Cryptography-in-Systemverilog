@@ -14,5 +14,7 @@ package hash_pkg;
     `include "BaseHash.svh"
     `include "CoreMD5.svh"
     `include "CoreSHA1.svh"
+    `include "CoreSHA2S2.svh"
+    `include "CoreSHA2S5.svh"
 endpackage
 

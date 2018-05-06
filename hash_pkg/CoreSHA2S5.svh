@@ -10,11 +10,12 @@
 `ifndef __CORE_SHA2_5S_SVH
 `define __CORE_SHA2_5S_SVH
 
-pure class CoreSHA2S5#(DL=512) extends BaseHash#(1024, 512, DL);
+virtual class CoreSHA2S5#(DL=512) extends BaseHash#(1024, 512, DL);
     protected tBlock block_reg;
-    protected struct packed{
-        tWord h[0:7];
-    } state;
+    typedef struct packed{
+        tWord h0, h1, h2, h3, h4, h5, h6, h7;
+    } sState;
+    protected sState state;
     protected struct packed {
         tWord mw, lw;
     } bit_cnt;
@@ -80,14 +81,14 @@ pure class CoreSHA2S5#(DL=512) extends BaseHash#(1024, 512, DL);
             `_LOG($sformatf("[t=%02d]abcdefgh: %08h %08h %08h %08h %08h %08h %08h %08h\n",
                 t, a, b, c, d, e, f, g, h))
         end
-        stin.h[0] += a;
-        stin.h[1] += b;
-        stin.h[2] += c;
-        stin.h[3] += d;
-        stin.h[4] += e;
-        stin.h[5] += f;
-        stin.h[6] += g;
-        stin.h[7] += h;
+        stin.h0 += a;
+        stin.h1 += b;
+        stin.h2 += c;
+        stin.h3 += d;
+        stin.h4 += e;
+        stin.h5 += f;
+        stin.h6 += g;
+        stin.h7 += h;
         return stin;
     endfunction: trans
 
@@ -143,17 +144,17 @@ class CoreSHA384 extends CoreSHA2S5#(384);
         initState();
     endfunction
     protected virtual function void initState ();
-        msg_reg = 0;
+        msg_reg = '{};
         bit_cnt = 0;
         block_reg = 0;
-        state.h[0] = 64'hcbbb9d5dc1059ed8;
-        state.h[1] = 64'h629a292a367cd507;
-        state.h[2] = 64'h9159015a3070dd17;
-        state.h[3] = 64'h152fecd8f70e5939;
-        state.h[4] = 64'h67332667ffc00b31;
-        state.h[5] = 64'h8eb44a8768581511;
-        state.h[6] = 64'hdb0c2e0d64f98fa7;
-        state.h[7] = 64'h47b5481dbefa4fa4;
+        state.h0 = 64'hcbbb9d5dc1059ed8;
+        state.h1 = 64'h629a292a367cd507;
+        state.h2 = 64'h9159015a3070dd17;
+        state.h3 = 64'h152fecd8f70e5939;
+        state.h4 = 64'h67332667ffc00b31;
+        state.h5 = 64'h8eb44a8768581511;
+        state.h6 = 64'hdb0c2e0d64f98fa7;
+        state.h7 = 64'h47b5481dbefa4fa4;
     endfunction
 endclass
 
@@ -163,17 +164,17 @@ class CoreSHA512 extends CoreSHA2S5#(512);
         initState();
     endfunction
     protected virtual function void initState ();
-        msg_reg = 0;
+        msg_reg = '{};
         bit_cnt = 0;
         block_reg = 0;
-        state.h[0] = 64'h6a09e667f3bcc908;
-        state.h[1] = 64'hbb67ae8584caa73b;
-        state.h[2] = 64'h3c6ef372fe94f82b;
-        state.h[3] = 64'ha54ff53a5f1d36f1;
-        state.h[4] = 64'h510e527fade682d1;
-        state.h[5] = 64'h9b05688c2b3e6c1f;
-        state.h[6] = 64'h1f83d9abfb41bd6b;
-        state.h[7] = 64'h5be0cd19137e2179;
+        state.h0 = 64'h6a09e667f3bcc908;
+        state.h1 = 64'hbb67ae8584caa73b;
+        state.h2 = 64'h3c6ef372fe94f82b;
+        state.h3 = 64'ha54ff53a5f1d36f1;
+        state.h4 = 64'h510e527fade682d1;
+        state.h5 = 64'h9b05688c2b3e6c1f;
+        state.h6 = 64'h1f83d9abfb41bd6b;
+        state.h7 = 64'h5be0cd19137e2179;
     endfunction
 endclass
 
@@ -183,17 +184,17 @@ class CoreSHA512_224 extends CoreSHA2S5#(224);
         initState();
     endfunction
     protected virtual function void initState ();
-        msg_reg = 0;
+        msg_reg = '{};
         bit_cnt = 0;
         block_reg = 0;
-        state.h[0] = 64'h8c3d37c819544da2;
-        state.h[1] = 64'h73e1996689dcd4d6;
-        state.h[2] = 64'h1dfab7ae32ff9c82;
-        state.h[3] = 64'h679dd514582f9fcf;
-        state.h[4] = 64'h0f6d2b697bd44da8;
-        state.h[5] = 64'h77e36f7304c48942;
-        state.h[6] = 64'h3f9d85a86a1d36c8;
-        state.h[7] = 64'h1112e6ad91d692a1;
+        state.h0 = 64'h8c3d37c819544da2;
+        state.h1 = 64'h73e1996689dcd4d6;
+        state.h2 = 64'h1dfab7ae32ff9c82;
+        state.h3 = 64'h679dd514582f9fcf;
+        state.h4 = 64'h0f6d2b697bd44da8;
+        state.h5 = 64'h77e36f7304c48942;
+        state.h6 = 64'h3f9d85a86a1d36c8;
+        state.h7 = 64'h1112e6ad91d692a1;
     endfunction
 endclass
 
@@ -203,17 +204,17 @@ class CoreSHA512_256 extends CoreSHA2S5#(256);
         initState();
     endfunction
     protected virtual function void initState ();
-        msg_reg = 0;
+        msg_reg = '{};
         bit_cnt = 0;
         block_reg = 0;
-        state.h[0] = 64'h22312194fc2bf72c;
-        state.h[1] = 64'h9f555fa3c84c64c2;
-        state.h[2] = 64'h2393b86b6f53b151;
-        state.h[3] = 64'h963877195940eabd;
-        state.h[4] = 64'h96283ee2a88effe3;
-        state.h[5] = 64'hbe5e1e2553863992;
-        state.h[6] = 64'h2b0199fc2c85b8aa;
-        state.h[7] = 64'h0eb72ddc81c52ca2;
+        state.h0 = 64'h22312194fc2bf72c;
+        state.h1 = 64'h9f555fa3c84c64c2;
+        state.h2 = 64'h2393b86b6f53b151;
+        state.h3 = 64'h963877195940eabd;
+        state.h4 = 64'h96283ee2a88effe3;
+        state.h5 = 64'hbe5e1e2553863992;
+        state.h6 = 64'h2b0199fc2c85b8aa;
+        state.h7 = 64'h0eb72ddc81c52ca2;
     endfunction
 endclass
 

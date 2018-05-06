@@ -9,11 +9,12 @@
 
 `ifndef __CORE_SHA2_2S_SVH
 `define __CORE_SHA2_2S_SVH
-pure class CoreSHA2S2#(DL=256) extends BaseHash#(512, 256, DL);
+virtual class CoreSHA2S2#(DL=256) extends BaseHash#(512, 256, DL);
     protected tBlock block_reg;
-    protected struct packed{
-        tWord h[0:7];
-    } state;
+    typedef struct packed{
+        tWord h0, h1, h2, h3, h4, h5, h6, h7;
+    } sState;
+    protected sState state;
     protected struct packed {
         tWord mw, lw;
     } bit_cnt;
@@ -67,16 +68,16 @@ pure class CoreSHA2S2#(DL=256) extends BaseHash#(512, 256, DL);
             `_LOG($sformatf("[t=%02d]abcdefgh: %08h %08h %08h %08h %08h %08h %08h %08h\n",
                 t, a, b, c, d, e, f, g, h))
         end
-        stin.h[0] += a;
-        stin.h[1] += b;
-        stin.h[2] += c;
-        stin.h[3] += d;
-        stin.h[4] += e;
-        stin.h[5] += f;
-        stin.h[6] += g;
-        stin.h[7] += h;
+        stin.h0 += a;
+        stin.h1 += b;
+        stin.h2 += c;
+        stin.h3 += d;
+        stin.h4 += e;
+        stin.h5 += f;
+        stin.h6 += g;
+        stin.h7 += h;
         return stin;
-    endfunction: trans
+    endfunction
 
     virtual function void update (byte msg[$]); 
         bit_cnt += msg.size()*8;
@@ -121,49 +122,48 @@ pure class CoreSHA2S2#(DL=256) extends BaseHash#(512, 256, DL);
         `_LOG($sformatf("[%s]Message digest: %0h\n", this_type.name(), st_tmp))
         return tDigestTr'(st_tmp>>(DIGEST_SIZE-DIGEST_LEN));
     endfunction
-
 endclass
 
-class CoreSHA256 extends CoreSHA2s#(256);
+class CoreSHA256 extends CoreSHA2S2#(256);
     function new();
         this_type = HASH_SHA256;
         initState();
     endfunction
 
     protected virtual function void initState ();
-        msg_reg = 0;
+        msg_reg = '{};
         bit_cnt = 0;
         block_reg = 0;
-        state.h[0] = 32'h6a09e667;
-        state.h[1] = 32'hbb67ae85;
-        state.h[2] = 32'h3c6ef372;
-        state.h[3] = 32'ha54ff53a;
-        state.h[4] = 32'h510e527f;
-        state.h[5] = 32'h9b05688c;
-        state.h[6] = 32'h1f83d9ab;
-        state.h[7] = 32'h5be0cd19;
-    endfunction: inits
+        state.h0 = 32'h6a09e667;
+        state.h1 = 32'hbb67ae85;
+        state.h2 = 32'h3c6ef372;
+        state.h3 = 32'ha54ff53a;
+        state.h4 = 32'h510e527f;
+        state.h5 = 32'h9b05688c;
+        state.h6 = 32'h1f83d9ab;
+        state.h7 = 32'h5be0cd19;
+    endfunction
 endclass: CoreSHA256 
 
-class CoreSHA224 extends CoreSHA2s#(224);
+class CoreSHA224 extends CoreSHA2S2#(224);
     function new();
         this_type = HASH_SHA224;
         initState();
     endfunction
 
     protected virtual function void initState ();
-        msg_reg = 0;
+        msg_reg = '{};
         bit_cnt = 0;
         block_reg = 0;
-        state.h[0] = 32'hc1059ed8;
-        state.h[1] = 32'h367cd507;
-        state.h[2] = 32'h3070dd17;
-        state.h[3] = 32'hf70e5939;
-        state.h[4] = 32'hffc00b31;
-        state.h[5] = 32'h68581511;
-        state.h[6] = 32'h64f98fa7;
-        state.h[7] = 32'hbefa4fa4;
-    endfunction: inits
+        state.h0 = 32'hc1059ed8;
+        state.h1 = 32'h367cd507;
+        state.h2 = 32'h3070dd17;
+        state.h3 = 32'hf70e5939;
+        state.h4 = 32'hffc00b31;
+        state.h5 = 32'h68581511;
+        state.h6 = 32'h64f98fa7;
+        state.h7 = 32'hbefa4fa4;
+    endfunction
 endclass: CoreSHA224 
 
 `endif
