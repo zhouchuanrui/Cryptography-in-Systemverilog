@@ -19,7 +19,9 @@ package test_pkg;
     `include "des_test.svh"
     `include "tdea_test.svh"
 
+    `include "hash_string_wrapper.svh"
     `include "md5_test.svh"
     `include "sha1_test.svh"
+    `include "sha2_test.svh"
 endpackage
 

@@ -9,13 +9,16 @@
 
 `ifndef __SHA1_TEST_SVH
 `define __SHA1_TEST_SVH
-class sha1_test extends TestPrototype;
+class sha1_test extends hash_string_wrapper#(hash_pkg::CoreSHA1);
     `__register(sha1_test)
     task test ();
-        hash_pkg::CoreSHA1 sha1;
-        sha1 = new();
-        sha1.setLogging();
-        void'(sha1.getDigest());
+        obj.setLogging();
+        void'(obj.getDigest());
+        this.procWhole("a");
+        this.procWhole("abc");
+        this.update("a");
+        this.update("bc");
+        void'(obj.getDigest());
     endtask: test
 endclass: sha1_test 
 `endif
