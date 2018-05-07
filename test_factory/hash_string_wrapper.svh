@@ -21,6 +21,7 @@ class hash_string_wrapper#(type T=hash_pkg::CoreMD5) extends TestPrototype;
         string msg
     );
         byte byte_msg[$];
+        $display("Add message: %s", msg);
         foreach(msg[i])
             byte_msg.push_back(msg[i]);
         obj.update(byte_msg);
@@ -30,9 +31,10 @@ class hash_string_wrapper#(type T=hash_pkg::CoreMD5) extends TestPrototype;
         string msg
     );
         byte byte_msg[$];
+        $display("/nMessage input: %s", msg);
         foreach(msg[i])
             byte_msg.push_back(msg[i]);
-        void'(obj.procWhole(byte_msg));
+        $display("Digest output: %0h", obj.procWhole(byte_msg));
     endfunction
 
     virtual task test ();

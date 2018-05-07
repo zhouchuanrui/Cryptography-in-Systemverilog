@@ -52,11 +52,11 @@ virtual class CoreSHA2S5#(DL=512) extends BaseHash#(1024, 512, DL);
     endfunction
 
     static protected function tWord lcSigma0 (tWord x);
-        return ROTR(x, 1)^ROTR(x, 18)^(x >> 7);
+        return ROTR(x, 1)^ROTR(x, 8)^(x >> 7);
     endfunction
 
     static protected function tWord lcSigma1 (tWord x);
-        return ROTR(x, 19)^ROTR(x, 51)^(x >> 6);
+        return ROTR(x, 19)^ROTR(x, 61)^(x >> 6);
     endfunction
 
     virtual function sState trans (
