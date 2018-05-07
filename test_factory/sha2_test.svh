@@ -18,6 +18,22 @@ class sha2_test_template#(type T=hash_pkg::CoreSHA2S5) extends hash_string_wrapp
         this.update("a");
         this.update("bc");
         void'(obj.getDigest());
+        begin
+            string vec = "abcd", msg="";
+            do begin
+                msg = {msg, vec};
+                foreach(vec[i]) vec[i]++;
+            end while(vec[0] <= "n");
+            this.procWhole(msg);
+        end
+        begin
+            string vec = "abcdefgh", msg="";
+            do begin
+                msg = {msg, vec};
+                foreach(vec[i]) vec[i]++;
+            end while(vec[0] <= "n");
+            this.procWhole(msg);
+        end
     endtask
 endclass
 
