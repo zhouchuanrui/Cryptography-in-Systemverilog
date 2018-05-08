@@ -22,7 +22,7 @@ class sha2_test_template#(type T=hash_pkg::CoreSHA2S5) extends hash_string_wrapp
             string vec = "abcd", msg="";
             do begin
                 msg = {msg, vec};
-                foreach(vec[i]) vec[i]++;
+                foreach(vec[i]) vec[i] = byte'(vec[i])+1;
             end while(vec[0] <= "n");
             this.procWhole(msg);
         end
@@ -30,7 +30,7 @@ class sha2_test_template#(type T=hash_pkg::CoreSHA2S5) extends hash_string_wrapp
             string vec = "abcdefgh", msg="";
             do begin
                 msg = {msg, vec};
-                foreach(vec[i]) vec[i]++;
+                foreach(vec[i]) vec[i] = byte'(vec[i])+1;
             end while(vec[0] <= "n");
             this.procWhole(msg);
         end
