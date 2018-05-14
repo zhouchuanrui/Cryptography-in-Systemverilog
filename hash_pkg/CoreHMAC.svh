@@ -43,14 +43,14 @@ class CoreHMAC#(type HASH_TYPE = CoreMD5);
             k0_updated = 0;
         end
         else begin
-            `_LOG("[HMAC:%s]Warning: Get identical key, use latched key\n", this.getName())
+            `_LOG($sformatf("[HMAC:%s]Warning: Get identical key, use latched key\n", this.getName()))
         end
     endfunction
 
     protected function tBlock packBytes (
-        byte bq[$], int blen = HASH_TYPE::BLOCK_SISE\8
+        byte bq[$], int blen = HASH_TYPE::BLOCK_SISE/8
     );
-        assert((blen <= bq.size())&&(blen <= HASH_TYPE::BLOCK_SISE\8))
+        assert((blen <= bq.size())&&(blen <= HASH_TYPE::BLOCK_SISE/8))
         else 
             $fatal(1, "Given blen: %0d out of range", bq.size());
         packBytes = 0;
@@ -72,7 +72,7 @@ class CoreHMAC#(type HASH_TYPE = CoreMD5);
         end
     endfunction
 
-    protected function void getK0 ();
+    protected function void genK0 ();
         `_LOG($sformatf("[HMAC@%s]Key size: %0d", HASH_TYPE::getName(), key.size()))
         if(key.size() == HASH_TYPE::BLOCK_SISE/8) begin
             k0 = packBytes(key, HASH_TYPE::BLOCK_SISE/8);
@@ -87,6 +87,70 @@ class CoreHMAC#(type HASH_TYPE = CoreMD5);
         k0_xor_ipad = k0^ipad;
         k0_xor_opad = k0^opad;
         k0_updated = 1;
+    endfunction
+
+    function void update (
+        byte msg[$]
+    );
+        byte tmp[$];
+        tmp = '{};
+        if(!k0_updated) begin
+            genK0();
+        end
+        if(k0_xor_ipad_hashed == 0) begin
+            unpackBytes(k0_xor_ipad, .bq(tmp));
+            k0_xor_ipad_hashed = 1;
+        end
+        tmp = {tmp, msg};
+        hash_obj.update(tmp);
+    endfunction
+
+    function tDigestTr getDigest ();
+        byte tmp[$];
+        tDigestTr tmp_dig;
+        tmp_dig = hash_obj.getDigest();
+        tmp = '{};
+        unpackBytes(k0_xor_opad, .bq(tmp));
+        unpackBytes(tmp_dig, HASH_TYPE::DIGEST_LEN, tmp);
+        `_LOG($sformatf("[HMAC@%s]K0: %0h",
+            HASH_TYPE::getName(), k0))
+        `_LOG($sformatf("[HMAC@%s]K0^ipad: %0h",
+            HASH_TYPE::getName(), k0_xor_ipad))
+        `_LOG($sformatf("[HMAC@%s]Hash(K0^ipad||text): %0h",
+            HASH_TYPE::getName(), tmp_dig))
+        `_LOG($sformatf("[HMAC@%s]K0^opad: %0h",
+            HASH_TYPE::getName(), k0_xor_opad))
+        `_LOG($sformatf("[HMAC@%s]len of K0^opad||Hash(K0^ipad||text): %0d",
+            HASH_TYPE::getName(), tmp.size()))
+        k0_xor_ipad_hashed = 0;
+        return hash_obj.procWhole(tmp);
+    endfunction
+
+    function tDigestTr procWhole (
+        byte msg[$]
+    );
+        HASH_TYPE this_hash_obj;
+        tDigestTr tmp_dig;
+        byte tmp[$];
+        this_hash_obj = new();
+        if(!k0_updated) genK0;
+        unpackBytes(k0_xor_ipad, .bq(tmp));
+        tmp = {tmp, msg};
+        tmp_dig = this_hash_obj.procWhole(tmp);
+        tmp = '{};
+        unpackBytes(k0_xor_ipad, .bq(tmp));
+        unpackBytes(tmp_dig, HASH_TYPE::DIGEST_LEN, tmp);
+        `_LOG($sformatf("[HMAC@%s]K0: %0h",
+            HASH_TYPE::getName(), k0))
+        `_LOG($sformatf("[HMAC@%s]K0^ipad: %0h",
+            HASH_TYPE::getName(), k0_xor_ipad))
+        `_LOG($sformatf("[HMAC@%s]Hash(K0^ipad||text): %0h",
+            HASH_TYPE::getName(), tmp_dig))
+        `_LOG($sformatf("[HMAC@%s]K0^opad: %0h",
+            HASH_TYPE::getName(), k0_xor_opad))
+        `_LOG($sformatf("[HMAC@%s]len of K0^opad||Hash(K0^ipad||text): %0d",
+            HASH_TYPE::getName(), tmp.size()))
+        return this_hash_obj.procWhole(tmp);
     endfunction
 endclass
 
