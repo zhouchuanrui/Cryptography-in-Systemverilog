@@ -73,7 +73,7 @@ class CoreHMAC#(type HASH_TYPE = CoreMD5);
     endfunction
 
     protected function void genK0 ();
-        `_LOG($sformatf("[HMAC@%s]Key size: %0d", HASH_TYPE::getName(), key.size()))
+        `_LOG($sformatf("[HMAC@%s]Key size: %0d\n", HASH_TYPE::getName(), key.size()))
         if(key.size() == HASH_TYPE::BLOCK_SISE/8) begin
             k0 = packBytes(key, HASH_TYPE::BLOCK_SISE/8);
         end
@@ -111,16 +111,16 @@ class CoreHMAC#(type HASH_TYPE = CoreMD5);
         tmp_dig = hash_obj.getDigest();
         tmp = '{};
         unpackBytes(k0_xor_opad, .bq(tmp));
-        unpackBytes(tmp_dig, HASH_TYPE::DIGEST_LEN, tmp);
-        `_LOG($sformatf("[HMAC@%s]K0: %0h",
+        unpackBytes(tmp_dig, HASH_TYPE::DIGEST_LEN/8, tmp);
+        `_LOG($sformatf("[HMAC@%s]K0: %0h\n",
             HASH_TYPE::getName(), k0))
-        `_LOG($sformatf("[HMAC@%s]K0^ipad: %0h",
+        `_LOG($sformatf("[HMAC@%s]K0^ipad: %0h\n",
             HASH_TYPE::getName(), k0_xor_ipad))
-        `_LOG($sformatf("[HMAC@%s]Hash(K0^ipad||text): %0h",
+        `_LOG($sformatf("[HMAC@%s]Hash(K0^ipad||text): %0h\n",
             HASH_TYPE::getName(), tmp_dig))
-        `_LOG($sformatf("[HMAC@%s]K0^opad: %0h",
+        `_LOG($sformatf("[HMAC@%s]K0^opad: %0h\n",
             HASH_TYPE::getName(), k0_xor_opad))
-        `_LOG($sformatf("[HMAC@%s]len of K0^opad||Hash(K0^ipad||text): %0d",
+        `_LOG($sformatf("[HMAC@%s]len of K0^opad||Hash(K0^ipad||text): %0d\n",
             HASH_TYPE::getName(), tmp.size()))
         k0_xor_ipad_hashed = 0;
         return hash_obj.procWhole(tmp);
@@ -139,7 +139,7 @@ class CoreHMAC#(type HASH_TYPE = CoreMD5);
         tmp_dig = this_hash_obj.procWhole(tmp);
         tmp = '{};
         unpackBytes(k0_xor_ipad, .bq(tmp));
-        unpackBytes(tmp_dig, HASH_TYPE::DIGEST_LEN, tmp);
+        unpackBytes(tmp_dig, HASH_TYPE::DIGEST_LEN/8, tmp);
         `_LOG($sformatf("[HMAC@%s]K0: %0h",
             HASH_TYPE::getName(), k0))
         `_LOG($sformatf("[HMAC@%s]K0^ipad: %0h",
