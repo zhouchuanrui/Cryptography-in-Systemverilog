@@ -133,12 +133,12 @@ class CoreHMAC#(type HASH_TYPE = CoreMD5);
         tDigestTr tmp_dig;
         byte tmp[$];
         this_hash_obj = new();
-        if(!k0_updated) genK0;
+        if(!k0_updated) genK0();
         unpackBytes(k0_xor_ipad, .bq(tmp));
         tmp = {tmp, msg};
         tmp_dig = this_hash_obj.procWhole(tmp);
         tmp = '{};
-        unpackBytes(k0_xor_ipad, .bq(tmp));
+        unpackBytes(k0_xor_opad, .bq(tmp));
         unpackBytes(tmp_dig, HASH_TYPE::DIGEST_LEN/8, tmp);
         `_LOG($sformatf("[HMAC@%s]K0: %0h\n",
             HASH_TYPE::getName(), k0))
