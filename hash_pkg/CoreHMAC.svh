@@ -56,7 +56,7 @@ class CoreHMAC#(type HASH_TYPE = CoreMD5);
         packBytes = 0;
         repeat(blen) begin
             packBytes >>= 8;
-            packBytes[HASH_TYPE::BLOCK_SISE-1 : HASH_TYPE::BLOCK_SISE-8] = bq.pop_back();
+            packBytes[blen*8-1 -: 8] = bq.pop_back();
         end
     endfunction
 
@@ -67,7 +67,7 @@ class CoreHMAC#(type HASH_TYPE = CoreMD5);
         else
             $fatal(1, "Given blen: %0d out of range", bq.size());
         repeat(blen) begin
-            bq.push_back(blk[HASH_TYPE::BLOCK_SISE-1 : HASH_TYPE::BLOCK_SISE-8]);
+            bq.push_back(blk[blen*8-1 -: 8]);
             blk <<= 8;
         end
     endfunction
@@ -140,15 +140,15 @@ class CoreHMAC#(type HASH_TYPE = CoreMD5);
         tmp = '{};
         unpackBytes(k0_xor_ipad, .bq(tmp));
         unpackBytes(tmp_dig, HASH_TYPE::DIGEST_LEN/8, tmp);
-        `_LOG($sformatf("[HMAC@%s]K0: %0h",
+        `_LOG($sformatf("[HMAC@%s]K0: %0h\n",
             HASH_TYPE::getName(), k0))
-        `_LOG($sformatf("[HMAC@%s]K0^ipad: %0h",
+        `_LOG($sformatf("[HMAC@%s]K0^ipad: %0h\n",
             HASH_TYPE::getName(), k0_xor_ipad))
-        `_LOG($sformatf("[HMAC@%s]Hash(K0^ipad||text): %0h",
+        `_LOG($sformatf("[HMAC@%s]Hash(K0^ipad||text): %0h\n",
             HASH_TYPE::getName(), tmp_dig))
-        `_LOG($sformatf("[HMAC@%s]K0^opad: %0h",
+        `_LOG($sformatf("[HMAC@%s]K0^opad: %0h\n",
             HASH_TYPE::getName(), k0_xor_opad))
-        `_LOG($sformatf("[HMAC@%s]len of K0^opad||Hash(K0^ipad||text): %0d",
+        `_LOG($sformatf("[HMAC@%s]len of K0^opad||Hash(K0^ipad||text): %0d\n",
             HASH_TYPE::getName(), tmp.size()))
         return this_hash_obj.procWhole(tmp);
     endfunction
