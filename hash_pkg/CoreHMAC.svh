@@ -56,7 +56,7 @@ class CoreHMAC#(type HASH_TYPE = CoreMD5);
         packBytes = 0;
         repeat(blen) begin
             packBytes >>= 8;
-            packBytes[blen*8-1 -: 8] = bq.pop_back();
+            packBytes[HASH_TYPE::BLOCK_SISE-1 -: 8] = bq.pop_back();
         end
     endfunction
 
